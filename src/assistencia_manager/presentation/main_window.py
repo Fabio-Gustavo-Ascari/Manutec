@@ -10,7 +10,7 @@ from assistencia_manager.presentation.pages import PAGE_DEFINITIONS, Placeholder
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("Assistência Manager")
+        self.setWindowTitle("Manutec")
         self.resize(1366, 768)
         self.setMinimumSize(1024, 640)
 

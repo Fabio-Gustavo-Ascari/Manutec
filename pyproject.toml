@@ -3,7 +3,7 @@ requires = ["setuptools>=75.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "assistencia-manager"
+name = "manutec"
 version = "0.1.0"
 description = "Sistema desktop de gestão para assistências técnicas"
 requires-python = ">=3.13,<3.14"
@@ -21,7 +21,7 @@ dev = [
 ]
 
 [project.scripts]
-assistencia-manager = "assistencia_manager.__main__:main"
+manutec = "assistencia_manager.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

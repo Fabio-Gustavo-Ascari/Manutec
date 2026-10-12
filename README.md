@@ -1,14 +1,35 @@
-# Assistência Manager
+# Manutec
 
-Sistema desktop offline para gestão de assistências técnicas.
+Sistema desktop offline para gerenciamento de assistências técnicas.
 
-## Status
+O Manutec foi pensado para centralizar o atendimento da assistência em um único aplicativo Windows, com dados locais e funcionamento sem dependência de conexão constante com a internet.
 
-A Etapa 01 contém apenas a fundação do projeto: configuração, persistência técnica, migrações iniciais e navegação visual com páginas-placeholder. Os módulos comerciais ainda não foram implementados.
+## Objetivo
 
-## Desenvolvimento
+Organizar o trabalho diário de assistências técnicas, reunindo clientes, equipamentos, ordens de serviço, estoque, vendas, pagamentos e relatórios em uma experiência simples para pequenas empresas.
 
-Requer Python 3.13 para o ambiente oficial:
+## Funcionalidades planejadas
+
+- Cadastro de clientes e equipamentos.
+- Ordens de serviço, orçamento e acompanhamento de status.
+- Controle de estoque e movimentação de peças.
+- Vendas e pagamentos.
+- Dashboard e relatórios.
+- Configurações da loja, backup e restauração.
+- Aplicativo Windows com banco de dados local.
+
+## Tecnologias
+
+- Python 3.13.
+- PySide6 para a interface desktop.
+- SQLAlchemy e SQLite para persistência local.
+- Alembic para migrações do banco.
+- Pytest para testes automatizados.
+- PyInstaller para empacotamento futuro.
+
+## Desenvolvimento local
+
+Requer Python 3.13:
 
 ```powershell
 py -3.13 -m venv .venv
@@ -18,16 +39,18 @@ pytest
 python -m assistencia_manager
 ```
 
-Os dados da aplicação serão armazenados em `%LOCALAPPDATA%\\AssistenciaManager`, fora do diretório do executável.
+Os dados da aplicação serão armazenados em `%LOCALAPPDATA%\Manutec`, fora do diretório do executável.
 
-## Validação pelo Harness
+## Arquitetura
 
-O projeto possui configuração em `.harness.yaml` e pode ser validado pelo harness global:
+O código é organizado em camadas para manter a interface, as regras de negócio e a persistência independentes:
 
-```powershell
-..\dev-harness\harness.ps1 detect -Project .
-..\dev-harness\harness.ps1 validate -Project . -Profile python
-..\dev-harness\harness.ps1 report -Project ..\dev-harness
+```text
+Presentation → Application → Domain
+                    ↓
+              Infrastructure
 ```
 
-O estado atual da Fundação permanece pendente de validação completa enquanto o ambiente Python 3.13 e as dependências de desenvolvimento não estiverem disponíveis.
+## Licença
+
+Consulte as licenças das dependências antes da distribuição comercial.

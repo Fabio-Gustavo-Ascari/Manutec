@@ -11,7 +11,7 @@ def test_default_database_path_uses_local_app_data(monkeypatch, tmp_path):
 
     paths = AppPaths.default()
 
-    assert paths.root == Path(tmp_path) / "AssistenciaManager"
+    assert paths.root == Path(tmp_path) / "Manutec"
     assert paths.database == paths.root / "data" / "assistencia.db"
 
 

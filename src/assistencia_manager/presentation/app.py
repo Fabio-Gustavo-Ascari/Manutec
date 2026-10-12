@@ -10,8 +10,8 @@ from assistencia_manager.presentation.main_window import MainWindow
 
 def run(argv: list[str] | None = None) -> int:
     application = QApplication(argv or sys.argv)
-    application.setApplicationName("Assistência Manager")
-    application.setOrganizationName("AssistenciaManager")
+    application.setApplicationName("Manutec")
+    application.setOrganizationName("Manutec")
     initialize_database()
     window = MainWindow()
     window.show()

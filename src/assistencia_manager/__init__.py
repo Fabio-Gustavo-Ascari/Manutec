@@ -1,3 +1,3 @@
-"""Assistência Manager application package."""
+"""Manutec application package."""
 
 __version__ = "0.1.0"

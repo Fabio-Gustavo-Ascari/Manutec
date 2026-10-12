@@ -14,3 +14,8 @@ build/
 *.db
 *.db-shm
 *.db-wal
+
+# Arquivos locais de desenvolvimento do Codex e do harness
+AGENTS.md
+.harness.yaml
+Docs/

@@ -17,7 +17,7 @@ class AppPaths:
     def default(cls) -> AppPaths:
         local_app_data = os.environ.get("LOCALAPPDATA")
         base = Path(local_app_data) if local_app_data else Path.home() / "AppData" / "Local"
-        root = base / "AssistenciaManager"
+        root = base / "Manutec"
         return cls(
             root=root,
             data=root / "data",
