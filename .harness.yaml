@@ -1,0 +1,5 @@
+profile: python
+syntax: true
+tests: true
+security: true
+git: true
