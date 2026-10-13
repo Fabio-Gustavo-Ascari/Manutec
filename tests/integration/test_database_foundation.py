@@ -2,8 +2,12 @@ from pathlib import Path
 
 from sqlalchemy import text
 
+from assistencia_manager.bootstrap import initialize_database
 from assistencia_manager.infrastructure.config.paths import AppPaths
+from assistencia_manager.infrastructure.database.base import Base
 from assistencia_manager.infrastructure.database.engine import create_engine
+from assistencia_manager.infrastructure.database.models import AppMetadata
+from assistencia_manager.infrastructure.database.session import create_session_factory
 
 
 def test_default_database_path_uses_local_app_data(monkeypatch, tmp_path):
@@ -46,3 +50,36 @@ def test_data_persists_after_engine_reinitialization(tmp_path):
     second_engine.dispose()
 
     assert value == "0.1.0"
+
+
+def test_metadata_contains_application_metadata_model():
+    assert AppMetadata.__tablename__ == "app_metadata"
+    assert "app_metadata" in Base.metadata.tables
+
+
+def test_session_factory_creates_short_lived_sessions(tmp_path):
+    engine = create_engine(tmp_path / "assistencia.db")
+    factory = create_session_factory(engine)
+
+    with factory() as session:
+        assert session.bind is engine
+
+    engine.dispose()
+
+
+def test_initialize_database_applies_base_migration(tmp_path, monkeypatch):
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    paths = AppPaths.default()
+
+    engine = initialize_database(paths)
+    with engine.connect() as connection:
+        tables = {
+            row[0]
+            for row in connection.execute(
+                text("SELECT name FROM sqlite_master WHERE type = 'table'")
+            )
+        }
+
+    assert paths.database.exists()
+    assert "app_metadata" in tables
+    engine.dispose()
