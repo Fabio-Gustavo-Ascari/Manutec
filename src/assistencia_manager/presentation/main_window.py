@@ -16,8 +16,7 @@ from assistencia_manager.presentation.pages.inventory import InventoryPage
 from assistencia_manager.presentation.pages.sales import SalesPage
 from assistencia_manager.presentation.pages.dashboard import DashboardPage
 from assistencia_manager.presentation.pages.e23_pages import CompanySettingsPage, FinancePage, FiscalPage
-from assistencia_manager.presentation.pages.reports import ReportsPage
-from assistencia_manager.presentation.pages.access import AccessPage
+from assistencia_manager.presentation.pages.e24_pages import ReportsPage, AccessAuditPage
 from assistencia_manager.presentation.shell import APP_STYLE
 
 
@@ -74,7 +73,7 @@ class MainWindow(QMainWindow):
             elif title == "Relatórios":
                 page = ReportsPage(report_service)
             elif title == "Usuários e auditoria":
-                page = AccessPage(access_service, audit_service)
+                page = AccessAuditPage(access_service, audit_service)
             else:
                 page = PlaceholderPage(title, description)
             self.stack.addWidget(page)
