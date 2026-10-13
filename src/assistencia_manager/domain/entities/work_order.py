@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 
@@ -22,6 +22,13 @@ class WorkOrderStatus(Enum):
     COMPLETED = "completed"
     DELIVERED = "delivered"
     CANCELLED = "cancelled"
+
+
+class WorkOrderPriority(Enum):
+    LOW = "low"
+    NORMAL = "normal"
+    HIGH = "high"
+    URGENT = "urgent"
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,6 +90,16 @@ class WorkOrder(Entity):
     discount: Decimal = Decimal("0.00")
     history_entries: list[WorkOrderHistoryEntry] = field(default_factory=list, repr=False)
     due_at: datetime | None = None
+    priority: WorkOrderPriority = WorkOrderPriority.NORMAL
+    technician_id: EntityId | None = None
+    warranty_days: int = 0
+    origin: str = "counter"
+    checklist: tuple[str, ...] = field(default_factory=tuple)
+    observations: str | None = None
+    photos: tuple[str, ...] = field(default_factory=tuple)
+    attachments: tuple[str, ...] = field(default_factory=tuple)
+    report: str | None = None
+    delivered_at: datetime | None = None
 
     @property
     def history(self) -> tuple[WorkOrderHistoryEntry, ...]:
@@ -98,6 +115,11 @@ class WorkOrder(Entity):
         intake_checklist: tuple[str, ...] = (),
         notes: str | None = None,
         due_at: datetime | None = None,
+        priority: WorkOrderPriority = WorkOrderPriority.NORMAL,
+        technician_id: EntityId | None = None,
+        warranty_days: int = 0,
+        origin: str = "counter",
+        checklist: tuple[str, ...] = (),
     ) -> WorkOrder:
         if not isinstance(client_id, EntityId) or not isinstance(equipment_id, EntityId):
             raise DomainValidationError("Ordem deve possuir cliente e equipamento válidos")
@@ -108,6 +130,8 @@ class WorkOrder(Entity):
             intake_checklist=tuple(item.strip() for item in intake_checklist if item.strip()),
             notes=notes.strip() if isinstance(notes, str) and notes.strip() else None,
             due_at=due_at,
+            priority=priority, technician_id=technician_id, warranty_days=warranty_days,
+            origin=_text(origin, "Origem"), checklist=tuple(item.strip() for item in checklist if item.strip()),
         )
         order._record("opened", "Ordem de serviço aberta")
         return order
@@ -117,6 +141,13 @@ class WorkOrder(Entity):
             raise DomainValidationError("Ordem deve possuir cliente e equipamento válidos")
         self.reported_issue = _text(self.reported_issue, "Defeito relatado")
         self.discount = _money(self.discount, "Desconto")
+        if not isinstance(self.priority, WorkOrderPriority):
+            raise DomainValidationError("Prioridade inválida")
+        if self.technician_id is not None and not isinstance(self.technician_id, EntityId):
+            raise DomainValidationError("Técnico inválido")
+        if self.warranty_days < 0:
+            raise DomainValidationError("Garantia não pode ser negativa")
+        self.origin = _text(self.origin, "Origem")
 
     @property
     def subtotal(self) -> Decimal:
@@ -125,6 +156,12 @@ class WorkOrder(Entity):
     @property
     def total(self) -> Decimal:
         return max(Decimal("0.00"), self.subtotal - self.discount).quantize(MONEY)
+
+    @property
+    def warranty_until(self) -> datetime | None:
+        if self.delivered_at is None or self.warranty_days <= 0:
+            return None
+        return self.delivered_at + timedelta(days=self.warranty_days)
 
     def _ensure_editable(self) -> None:
         if self.status in {WorkOrderStatus.DELIVERED, WorkOrderStatus.REJECTED, WorkOrderStatus.CANCELLED}:
@@ -168,6 +205,27 @@ class WorkOrder(Entity):
         self._ensure_editable()
         self.diagnosis = _text(diagnosis, "Diagnóstico")
         self._record("diagnosis_updated", "Diagnóstico atualizado")
+
+    def set_observations(self, observations: str) -> None:
+        self._ensure_editable(); self.observations = _text(observations, "Observações")
+        self._record("observations_updated", "Observações atualizadas")
+
+    def add_photo(self, path: str) -> None:
+        self._ensure_editable(); path = _text(path, "Foto")
+        if path not in self.photos: self.photos = (*self.photos, path)
+        self._record("photo_added", "Foto anexada")
+
+    def add_attachment(self, path: str) -> None:
+        self._ensure_editable(); path = _text(path, "Anexo")
+        if path not in self.attachments: self.attachments = (*self.attachments, path)
+        self._record("attachment_added", "Anexo adicionado")
+
+    def set_report(self, report: str) -> None:
+        self._ensure_editable(); self.report = _text(report, "Laudo"); self._record("report_updated", "Laudo atualizado")
+
+    def mark_delivered(self) -> None:
+        self.transition_to(WorkOrderStatus.DELIVERED)
+        self.delivered_at = datetime.now(timezone.utc)
 
     def set_discount(self, discount: Decimal | int | str) -> None:
         self._ensure_editable()

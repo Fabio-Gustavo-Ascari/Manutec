@@ -6,6 +6,7 @@ from assistencia_manager.application.dto.pagination import Page
 from assistencia_manager.application.dto.work_order import (
     AddWorkOrderItemCommand,
     OpenWorkOrderCommand,
+    UpdateWorkOrderDetailsCommand, WorkOrderEvidenceCommand,
     WorkOrderSearchQuery,
     WorkOrderStatusCommand,
 )
@@ -32,9 +33,39 @@ class WorkOrderService:
                 intake_checklist=command.intake_checklist,
                 notes=command.notes,
                 due_at=command.due_at,
+                priority=command.priority, technician_id=command.technician_id, warranty_days=command.warranty_days,
+                origin=command.origin, checklist=command.checklist,
             )
             uow.work_orders.add(order)
             return order
+
+    def update_details(self, command: UpdateWorkOrderDetailsCommand) -> WorkOrder:
+        with self._unit_of_work_factory() as uow:
+            order = self._get(uow, command.identifier); order._ensure_editable()
+            if command.priority is not None: order.priority = command.priority
+            if command.technician_id is not None: order.technician_id = command.technician_id
+            if command.due_at is not None: order.due_at = command.due_at
+            if command.warranty_days is not None: order.warranty_days = command.warranty_days
+            if command.origin is not None: order.origin = command.origin.strip()
+            if command.checklist is not None: order.checklist = tuple(x.strip() for x in command.checklist if x.strip())
+            if command.observations is not None: order.set_observations(command.observations)
+            uow.work_orders.add(order); return order
+
+    def add_photo(self, command: WorkOrderEvidenceCommand) -> WorkOrder:
+        return self._evidence(command, "photo")
+
+    def add_attachment(self, command: WorkOrderEvidenceCommand) -> WorkOrder:
+        return self._evidence(command, "attachment")
+
+    def set_report(self, command: WorkOrderEvidenceCommand) -> WorkOrder:
+        with self._unit_of_work_factory() as uow:
+            order = self._get(uow, command.identifier); order.set_report(command.value); uow.work_orders.add(order); return order
+
+    def _evidence(self, command, kind):
+        with self._unit_of_work_factory() as uow:
+            order = self._get(uow, command.identifier)
+            (order.add_photo if kind == "photo" else order.add_attachment)(command.value)
+            uow.work_orders.add(order); return order
 
     def add_item(self, command: AddWorkOrderItemCommand) -> WorkOrder:
         with self._unit_of_work_factory() as uow:

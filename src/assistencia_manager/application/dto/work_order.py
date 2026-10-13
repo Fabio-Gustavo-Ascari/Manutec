@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
 
-from assistencia_manager.domain.entities.work_order import WorkOrderStatus
+from assistencia_manager.domain.entities.work_order import WorkOrderPriority, WorkOrderStatus
 from assistencia_manager.domain.exceptions import DomainValidationError
 from assistencia_manager.domain.identifiers import EntityId
 
@@ -17,6 +17,29 @@ class OpenWorkOrderCommand:
     intake_checklist: tuple[str, ...] = ()
     notes: str | None = None
     due_at: datetime | None = None
+    priority: WorkOrderPriority = WorkOrderPriority.NORMAL
+    technician_id: EntityId | None = None
+    warranty_days: int = 0
+    origin: str = "counter"
+    checklist: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class UpdateWorkOrderDetailsCommand:
+    identifier: EntityId
+    priority: WorkOrderPriority | None = None
+    technician_id: EntityId | None = None
+    due_at: datetime | None = None
+    warranty_days: int | None = None
+    origin: str | None = None
+    checklist: tuple[str, ...] | None = None
+    observations: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class WorkOrderEvidenceCommand:
+    identifier: EntityId
+    value: str
 
 
 @dataclass(frozen=True, slots=True)

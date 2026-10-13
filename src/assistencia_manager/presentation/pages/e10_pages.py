@@ -8,10 +8,10 @@ from assistencia_manager.application.dto.client import ClientSearchQuery
 from assistencia_manager.application.dto.equipment import EquipmentSearchQuery
 from assistencia_manager.application.dto.inventory import CreatePartCommand, PartSearchQuery, RecordInventoryMovementCommand
 from assistencia_manager.application.dto.sales import AddSaleItemCommand, CreateSaleCommand, RecordPaymentCommand
-from assistencia_manager.application.dto.work_order import AddWorkOrderItemCommand, OpenWorkOrderCommand, WorkOrderSearchQuery, WorkOrderStatusCommand
+from assistencia_manager.application.dto.work_order import AddWorkOrderItemCommand, OpenWorkOrderCommand, WorkOrderSearchQuery, WorkOrderStatusCommand, WorkOrderEvidenceCommand, UpdateWorkOrderDetailsCommand
 from assistencia_manager.domain.entities.inventory import InventoryMovementType
 from assistencia_manager.domain.entities.sales import PaymentMethod
-from assistencia_manager.domain.entities.work_order import WorkOrderStatus
+from assistencia_manager.domain.entities.work_order import WorkOrderPriority, WorkOrderStatus
 from assistencia_manager.domain.exceptions import DomainError
 from assistencia_manager.presentation.shell import PageShell, SearchableComboBox, populate_combo
 
@@ -27,16 +27,18 @@ class WorkOrdersPage(QWidget):
         self.search_input = QLineEdit(); self.search_input.setPlaceholderText("Buscar por defeito, cliente ou número")
         self.status_filter = QComboBox(); self.status_filter.addItem("Todos", None); [self.status_filter.addItem(s.value.replace("_", " ").title(), s) for s in WorkOrderStatus]
         self.client_label = QLabel("Cliente"); self.client_input = SearchableComboBox(); self.equipment_input = SearchableComboBox(); self.issue_input = QLineEdit(); self.issue_input.setPlaceholderText("Descreva o defeito relatado")
+        self.priority_input = QComboBox(); [self.priority_input.addItem(p.value.title(), p) for p in WorkOrderPriority]; self.technician_input = QLineEdit(); self.origin_input = QLineEdit("counter"); self.checklist_input = QLineEdit(); self.observations_input = QLineEdit(); self.diagnosis_input = QLineEdit(); self.photo_input = QLineEdit(); self.attachment_input = QLineEdit(); self.report_input = QLineEdit()
         self.item_description = QLineEdit(); self.item_quantity = QLineEdit("1"); self.item_price = QLineEdit("0")
         self.items_table = QTableWidget(0, 4); self.items_table.setHorizontalHeaderLabels(["Item", "Qtd.", "Unitário", "Total"])
         self.orders_table = QTableWidget(0, 4); self.orders_table.setHorizontalHeaderLabels(["OS", "Status", "Defeito", "Total"]); self.orders_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows); self.orders_table.itemSelectionChanged.connect(self._show_selected)
         self.client_input.currentIndexChanged.connect(self._load_equipment); self.search_input.textChanged.connect(self.refresh); self.status_filter.currentIndexChanged.connect(self.refresh)
         open_button = QPushButton("Abrir ordem"); open_button.setObjectName("primaryAction"); open_button.clicked.connect(self._open); add_button = QPushButton("Adicionar item"); add_button.clicked.connect(self._add_item); refresh_button = QPushButton("Atualizar"); refresh_button.clicked.connect(self.refresh); approve_button = QPushButton("Aprovar"); approve_button.clicked.connect(lambda: self._transition(WorkOrderStatus.APPROVED)); cancel_button = QPushButton("Cancelar"); cancel_button.clicked.connect(lambda: self._transition(WorkOrderStatus.CANCELLED))
-        form = QFormLayout(); form.addRow(self.client_label, self.client_input); form.addRow("Equipamento", self.equipment_input); form.addRow("Defeito relatado", self.issue_input)
+        form = QFormLayout(); form.addRow(self.client_label, self.client_input); form.addRow("Equipamento", self.equipment_input); form.addRow("Defeito relatado", self.issue_input); form.addRow("Prioridade", self.priority_input); form.addRow("Técnico", self.technician_input); form.addRow("Origem", self.origin_input); form.addRow("Checklist", self.checklist_input); form.addRow("Observações", self.observations_input)
         item_form = QHBoxLayout(); item_form.addWidget(self.item_description, 2); item_form.addWidget(self.item_quantity); item_form.addWidget(self.item_price); item_form.addWidget(add_button)
         actions = QHBoxLayout(); [actions.addWidget(x) for x in (open_button, refresh_button, approve_button, cancel_button)]
         filters = QHBoxLayout(); filters.addWidget(self.search_input, 2); filters.addWidget(self.status_filter)
-        shell = PageShell("Ordens de serviço", "Abertura, orçamento e acompanhamento do atendimento"); shell.body.addLayout(form); shell.body.addLayout(filters); shell.body.addLayout(actions); shell.body.addWidget(self.orders_table, 2); shell.body.addWidget(QLabel("Itens da ordem selecionada")); shell.body.addLayout(item_form); shell.body.addWidget(self.items_table)
+        evidence = QHBoxLayout(); evidence.addWidget(self.diagnosis_input); evidence.addWidget(self.photo_input); evidence.addWidget(self.attachment_input); evidence.addWidget(self.report_input); update = QPushButton("Salvar detalhes"); update.clicked.connect(self._update_details); evidence.addWidget(update)
+        shell = PageShell("Ordens de serviço", "Atendimento, orçamento, execução, evidências e entrega"); shell.body.addLayout(form); shell.body.addLayout(filters); shell.body.addLayout(actions); shell.body.addWidget(self.orders_table, 2); shell.body.addWidget(QLabel("Itens da ordem selecionada")); shell.body.addLayout(item_form); shell.body.addWidget(self.items_table); shell.body.addLayout(evidence)
         layout = QVBoxLayout(self); layout.setContentsMargins(18, 18, 18, 18); layout.addWidget(shell); self._load_clients(); self.refresh()
 
     def _load_clients(self):
@@ -69,7 +71,7 @@ class WorkOrdersPage(QWidget):
         if not self.service: return
         try:
             if self.client_input.currentData() is None or self.equipment_input.currentData() is None: raise ValueError("Selecione o cliente e o equipamento")
-            self.service.open(OpenWorkOrderCommand(self.client_input.currentData(), self.equipment_input.currentData(), self.issue_input.text())); self.refresh()
+            self.service.open(OpenWorkOrderCommand(self.client_input.currentData(), self.equipment_input.currentData(), self.issue_input.text(), priority=self.priority_input.currentData(), origin=self.origin_input.text(), checklist=tuple(x.strip() for x in self.checklist_input.text().split(",") if x.strip()))); self.refresh()
         except (DomainError, ValueError) as error: QMessageBox.warning(self, "Não foi possível abrir a ordem", str(error))
 
     def _add_item(self):
@@ -83,6 +85,17 @@ class WorkOrdersPage(QWidget):
         if not self.service or not order: return
         try: self.service.transition(WorkOrderStatusCommand(order.id, status)); self.refresh()
         except (DomainError, ValueError) as error: QMessageBox.warning(self, "Não foi possível alterar a ordem", str(error))
+
+    def _update_details(self):
+        order = self._selected_order()
+        if not self.service or not order: return
+        try:
+            self.service.update_details(UpdateWorkOrderDetailsCommand(order.id, priority=self.priority_input.currentData(), origin=self.origin_input.text(), checklist=tuple(x.strip() for x in self.checklist_input.text().split(",") if x.strip()), observations=self.observations_input.text() or None))
+            if self.photo_input.text(): self.service.add_photo(WorkOrderEvidenceCommand(order.id, self.photo_input.text()))
+            if self.attachment_input.text(): self.service.add_attachment(WorkOrderEvidenceCommand(order.id, self.attachment_input.text()))
+            if self.report_input.text(): self.service.set_report(WorkOrderEvidenceCommand(order.id, self.report_input.text()))
+            self.refresh()
+        except (DomainError, ValueError) as error: QMessageBox.warning(self, "Não foi possível salvar os detalhes", str(error))
 
 
 class SalesPage(QWidget):
