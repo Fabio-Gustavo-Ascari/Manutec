@@ -3,10 +3,12 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
+from datetime import date
 
 from assistencia_manager.application.dto.procurement import CreatePurchaseOrderCommand, ReceivePurchaseOrderCommand, StockCountCommand
 from assistencia_manager.domain.entities.inventory import InventoryMovement, InventoryMovementType, StockLedger
 from assistencia_manager.domain.entities.procurement import PurchaseOrder, PurchaseOrderLine
+from assistencia_manager.domain.entities.finance import FinancialEntry, FinancialEntryType
 from assistencia_manager.domain.exceptions import DomainValidationError, EntityNotFoundError
 from assistencia_manager.domain.unit_of_work import UnitOfWork
 
@@ -30,6 +32,9 @@ class ProcurementService:
                 lines.append(PurchaseOrderLine(part_id, quantity, unit_cost))
             order = PurchaseOrder.create(supplier_id=command.supplier_id, lines=tuple(lines), due_date=command.due_date, notes=command.notes)
             uow.purchase_orders.add(order)
+            entries = getattr(uow, "financial_entries", None)
+            if entries is not None:
+                entries.add(FinancialEntry(FinancialEntryType.PAYABLE, f"Compra {order.id}", order.total, command.due_date or date.today(), source_type="purchase_order", source_id=order.id))
             return order
 
     def receive(self, command: ReceivePurchaseOrderCommand) -> PurchaseOrder:

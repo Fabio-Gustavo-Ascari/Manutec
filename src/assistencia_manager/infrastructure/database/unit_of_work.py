@@ -13,6 +13,7 @@ from assistencia_manager.infrastructure.database.repositories import (
     SqlAlchemySaleRepository, SqlAlchemyPaymentRepository, SqlAlchemyCashRegisterRepository,
     SqlAlchemyCatalogRepository, SqlAlchemyServiceRepository, SqlAlchemyServicePackageRepository, SqlAlchemyWarrantyRuleRepository,
     SqlAlchemyPurchaseOrderRepository,
+    SqlAlchemyFinancialEntryRepository, SqlAlchemyRecurringExpenseRepository, SqlAlchemyCommissionRepository,
 )
 
 
@@ -33,6 +34,7 @@ class SqlAlchemyUnitOfWork:
         self.cash_registers: SqlAlchemyCashRegisterRepository | None = None
         self.catalogs = self.services = self.service_packages = self.warranty_rules = None
         self.purchase_orders = None
+        self.financial_entries = self.recurring_expenses = self.commissions = None
 
     def __enter__(self) -> SqlAlchemyUnitOfWork:
         self.session = self._session_factory()
@@ -50,6 +52,9 @@ class SqlAlchemyUnitOfWork:
         self.service_packages = SqlAlchemyServicePackageRepository(self.session)
         self.warranty_rules = SqlAlchemyWarrantyRuleRepository(self.session)
         self.purchase_orders = SqlAlchemyPurchaseOrderRepository(self.session)
+        self.financial_entries = SqlAlchemyFinancialEntryRepository(self.session)
+        self.recurring_expenses = SqlAlchemyRecurringExpenseRepository(self.session)
+        self.commissions = SqlAlchemyCommissionRepository(self.session)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
@@ -73,6 +78,7 @@ class SqlAlchemyUnitOfWork:
                 self.cash_registers = None
                 self.catalogs = self.services = self.service_packages = self.warranty_rules = None
                 self.purchase_orders = None
+                self.financial_entries = self.recurring_expenses = self.commissions = None
 
     def commit(self) -> None:
         if self.session is None:

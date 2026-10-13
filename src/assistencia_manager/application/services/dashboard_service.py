@@ -8,6 +8,7 @@ from decimal import Decimal
 from assistencia_manager.application.dto.dashboard import DashboardSnapshot
 from assistencia_manager.domain.entities.inventory import StockLedger
 from assistencia_manager.domain.entities.sales import PaymentStatus, SaleStatus
+from assistencia_manager.domain.entities.finance import FinancialEntryStatus, FinancialEntryType
 
 
 class DashboardService:
@@ -43,4 +44,7 @@ class DashboardService:
                 balance = StockLedger(tuple(m for m in movements if m.part_id == part.id)).physical_balance(part.id)
                 if balance <= part.minimum_stock:
                     low_stock += 1
-            return DashboardSnapshot(dict(counts), overdue, paid.quantize(Decimal("0.01")), low_stock)
+            entries = tuple(getattr(uow, "financial_entries", object()).list()) if hasattr(getattr(uow, "financial_entries", None), "list") else ()
+            open_payables = sum((entry.remaining_amount for entry in entries if entry.entry_type is FinancialEntryType.PAYABLE and entry.status in {FinancialEntryStatus.OPEN, FinancialEntryStatus.PARTIAL}), Decimal("0.00"))
+            open_receivables = sum((entry.remaining_amount for entry in entries if entry.entry_type is FinancialEntryType.RECEIVABLE and entry.status in {FinancialEntryStatus.OPEN, FinancialEntryStatus.PARTIAL}), Decimal("0.00"))
+            return DashboardSnapshot(dict(counts), overdue, paid.quantize(Decimal("0.01")), low_stock, open_payables, open_receivables)

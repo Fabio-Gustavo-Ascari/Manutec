@@ -8,6 +8,7 @@ from assistencia_manager.domain.entities.equipment import Equipment
 from assistencia_manager.domain.entities.work_order import WorkOrder
 from assistencia_manager.domain.entities.inventory import InventoryMovement, Part, PartReservation
 from assistencia_manager.domain.entities.sales import CashRegister, Payment, Sale
+from assistencia_manager.domain.entities.finance import Commission, FinancialEntry, RecurringExpense
 from assistencia_manager.domain.identifiers import EntityId
 
 EntityT = TypeVar("EntityT")
@@ -88,4 +89,16 @@ class PaymentRepository(Repository[Payment], Protocol):
 
 class CashRegisterRepository(Repository[CashRegister], Protocol):
     def current_open(self) -> CashRegister | None: ...
+
+
+class FinancialEntryRepository(Repository[FinancialEntry], Protocol):
+    def list_by_period(self, start, end) -> Sequence[FinancialEntry]: ...
+
+
+class RecurringExpenseRepository(Repository[RecurringExpense], Protocol):
+    pass
+
+
+class CommissionRepository(Repository[Commission], Protocol):
+    pass
 

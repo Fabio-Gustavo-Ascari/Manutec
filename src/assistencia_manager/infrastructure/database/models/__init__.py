@@ -8,10 +8,12 @@ from assistencia_manager.infrastructure.database.models.inventory import (
 from assistencia_manager.infrastructure.database.models.sales import CashRegisterModel, PaymentModel, SaleModel
 from assistencia_manager.infrastructure.database.models.catalog import CatalogEntryModel, ServiceModel, ServicePackageModel, WarrantyRuleModel
 from assistencia_manager.infrastructure.database.models.procurement import PurchaseOrderModel, PurchaseOrderLineModel
+from assistencia_manager.infrastructure.database.models.finance import FinancialEntryModel, RecurringExpenseModel, CommissionModel
 
 __all__ = [
     "AppMetadata", "ClientModel", "EquipmentModel", "WorkOrderModel",
     "PartModel", "InventoryMovementModel", "PartReservationModel",
     "SaleModel", "PaymentModel", "CashRegisterModel",
     "CatalogEntryModel", "ServiceModel", "ServicePackageModel", "WarrantyRuleModel", "PurchaseOrderModel", "PurchaseOrderLineModel",
+    "FinancialEntryModel", "RecurringExpenseModel", "CommissionModel",
 ]

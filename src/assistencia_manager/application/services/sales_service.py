@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from decimal import Decimal
+from datetime import date
 
 from assistencia_manager.application.dto.sales import (
     AddSaleItemCommand, CashMovementCommand, CreateSaleCommand, OpenCashCommand,
@@ -10,6 +11,7 @@ from assistencia_manager.application.dto.sales import (
 )
 from assistencia_manager.domain.entities.inventory import InventoryMovementType, StockLedger
 from assistencia_manager.domain.entities.sales import CashRegister, Payment, Sale, SaleStatus
+from assistencia_manager.domain.entities.finance import FinancialEntry, FinancialEntryType
 from assistencia_manager.domain.exceptions import DomainValidationError, EntityNotFoundError
 from assistencia_manager.domain.unit_of_work import UnitOfWork
 
@@ -55,6 +57,7 @@ class SalesService:
                 movement = ledger.record(part_id=item.part_id, movement_type=InventoryMovementType.EXIT, quantity=item.quantity, reference_id=sale.id, note="Venda")
                 uow.inventory_movements.add(movement)
             uow.sales.add(sale)
+            self._ensure_receivable(uow, sale)
             return sale
 
     def cancel(self, identifier) -> Sale:
@@ -86,6 +89,12 @@ class SalesService:
             sale.add_payment(payment)
             uow.payments.add(payment)
             uow.sales.add(sale)
+            entries = getattr(uow, "financial_entries", None)
+            if entries is not None:
+                receivable = next((item for item in entries.list() if item.source_type == "sale" and item.source_id == sale.id and item.status.value in {"open", "partial"}), None)
+                if receivable is not None:
+                    receivable.settle(min(payment.amount, receivable.remaining_amount))
+                    entries.add(receivable)
             register = uow.cash_registers.current_open()
             if register:
                 register.record(amount=payment.amount, description=f"Venda {sale.id}")
@@ -119,6 +128,13 @@ class SalesService:
             sale.add_payment(payment)
             uow.payments.add(payment)
             uow.sales.add(sale)
+            self._ensure_receivable(uow, sale)
+            entries = getattr(uow, "financial_entries", None)
+            if entries is not None:
+                receivable = next((item for item in entries.list() if item.source_type == "sale" and item.source_id == sale.id and item.status.value in {"open", "partial"}), None)
+                if receivable is not None:
+                    receivable.settle(min(payment.amount, receivable.remaining_amount))
+                    entries.add(receivable)
             return payment
 
     def open_cash(self, command: OpenCashCommand = OpenCashCommand()) -> CashRegister:
@@ -150,3 +166,13 @@ class SalesService:
         if sale is None: raise EntityNotFoundError(f"Venda {identifier} não encontrada")
         sale.payments = list(uow.payments.list_for_sale(sale.id))
         return sale
+
+    @staticmethod
+    def _ensure_receivable(uow, sale: Sale) -> None:
+        entries = getattr(uow, "financial_entries", None)
+        if entries is None:
+            return
+        if any(item.source_type == "sale" and item.source_id == sale.id for item in entries.list()):
+            return
+        if sale.total > 0:
+            entries.add(FinancialEntry(FinancialEntryType.RECEIVABLE, f"Venda {sale.id}", sale.total, date.today(), source_type="sale", source_id=sale.id))

@@ -19,6 +19,7 @@ def test_page_definitions_are_stable():
         "Ordens de serviço",
         "Estoque",
             "Compras",
+        "Financeiro",
         "Vendas",
         "Configurações",
         "Cadastros",
