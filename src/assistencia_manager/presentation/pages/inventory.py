@@ -24,6 +24,9 @@ class InventoryPage(QWidget):
         self.category_input = QLineEdit()
         self.unit_input = QLineEdit("un")
         self.sku_input = QLineEdit()
+        self.cost_input = QLineEdit("0")
+        self.price_input = QLineEdit("0")
+        self.minimum_stock_input = QLineEdit("0")
         self.quantity_input = QLineEdit()
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Buscar peça")
@@ -42,6 +45,9 @@ class InventoryPage(QWidget):
         form.addRow("Categoria", self.category_input)
         form.addRow("Unidade", self.unit_input)
         form.addRow("SKU", self.sku_input)
+        form.addRow("Custo", self.cost_input)
+        form.addRow("Preço", self.price_input)
+        form.addRow("Estoque mínimo", self.minimum_stock_input)
         form.addRow("Quantidade", self.quantity_input)
         actions = QHBoxLayout()
         for button in (create_button, entry_button, exit_button, refresh_button):
@@ -70,6 +76,9 @@ class InventoryPage(QWidget):
             self.service.create_part(CreatePartCommand(
                 name=self.name_input.text(), category=self.category_input.text(),
                 unit=self.unit_input.text(), sku=self.sku_input.text() or None,
+                cost=Decimal(self.cost_input.text() or "0"),
+                price=Decimal(self.price_input.text() or "0"),
+                minimum_stock=Decimal(self.minimum_stock_input.text() or "0"),
             ))
             self.refresh()
         except (DomainError, ValueError) as error:

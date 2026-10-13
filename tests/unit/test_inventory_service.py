@@ -54,3 +54,19 @@ def test_inventory_service_records_entry_and_reserves_only_available_quantity():
     assert reservation.quantity == Decimal("3")
     with pytest.raises(ValueError):
         service.reserve(ReservePartCommand(part.id, order_id, Decimal("3")))
+
+
+def test_inventory_service_consumes_reservation_with_audit_movement():
+    uow = Uow()
+    service = InventoryService(lambda: uow)
+    part = service.create_part(CreatePartCommand("Bateria", "Energia"))
+    service.record_movement(RecordInventoryMovementCommand(part.id, InventoryMovementType.ENTRY, Decimal("2")))
+    order_id = EntityId.new()
+    uow.work_orders.add(type("Order", (), {"id": order_id})())
+    reservation = service.reserve(ReservePartCommand(part.id, order_id, Decimal("1")))
+
+    consumed = service.consume_reservation(reservation.id)
+
+    assert consumed.status.value == "consumed"
+    assert uow.inventory_movements.list_for_part(part.id)[-1].movement_type is InventoryMovementType.CONSUMPTION
+    assert service.balance(part.id) == (Decimal("1"), Decimal("1"))

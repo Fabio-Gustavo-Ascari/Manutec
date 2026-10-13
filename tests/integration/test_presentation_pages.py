@@ -9,6 +9,8 @@ from assistencia_manager.presentation.pages.work_orders import WorkOrdersPage
 from assistencia_manager.presentation.pages.inventory import InventoryPage
 from assistencia_manager.application.dto.client import ClientSearchQuery
 from assistencia_manager.application.dto.equipment import EquipmentSearchQuery
+from assistencia_manager.application.dto.pagination import Page
+from assistencia_manager.domain.entities.inventory import Part
 from assistencia_manager.domain.entities.client import Client
 from assistencia_manager.domain.entities.equipment import Equipment
 from assistencia_manager.domain.identifiers import EntityId
@@ -78,5 +80,36 @@ def test_equipment_page_can_search_and_load_selected_equipment():
     page.results_table.selectRow(0)
     page.load_selected()
     assert page.form.equipment_type_input.text() == "Notebook"
+    page.close()
+    application.quit()
+
+
+def test_inventory_page_submits_catalog_prices_and_minimum_stock():
+    application = QApplication.instance() or QApplication([])
+    captured = []
+
+    class Service:
+        def create_part(self, command):
+            captured.append(command)
+            return Part.create(
+                name=command.name, category=command.category, unit=command.unit,
+                sku=command.sku, cost=command.cost, price=command.price,
+                minimum_stock=command.minimum_stock,
+            )
+
+        def search(self, query):
+            return Page(items=(), page=query.page, page_size=query.page_size, total_items=0)
+
+    page = InventoryPage(Service())
+    page.name_input.setText("Tela")
+    page.category_input.setText("Displays")
+    page.cost_input.setText("100")
+    page.price_input.setText("180")
+    page.minimum_stock_input.setText("2")
+    page._create()
+
+    assert captured[0].cost == 100
+    assert captured[0].price == 180
+    assert captured[0].minimum_stock == 2
     page.close()
     application.quit()

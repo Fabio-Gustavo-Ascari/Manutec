@@ -8,9 +8,11 @@ from assistencia_manager.application.dto.inventory import (
 )
 from assistencia_manager.application.dto.pagination import Page
 from assistencia_manager.domain.entities.inventory import (
-    InventoryMovement, Part, PartReservation, ReservationStatus, StockLedger,
+    InventoryMovement, InventoryMovementType, Part, PartReservation, ReservationStatus, StockLedger,
 )
-from assistencia_manager.domain.exceptions import DuplicateEntityError, EntityNotFoundError
+from assistencia_manager.domain.exceptions import (
+    DomainValidationError, DuplicateEntityError, EntityNotFoundError,
+)
 from assistencia_manager.domain.unit_of_work import UnitOfWork
 
 
@@ -116,9 +118,42 @@ class InventoryService:
             uow.reservations.add(reservation)
             return reservation
 
+    def release_reservation(self, identifier) -> PartReservation:
+        with self._unit_of_work_factory() as uow:
+            reservation = self._get_reservation(uow, identifier)
+            reservation.release()
+            uow.reservations.add(reservation)
+            return reservation
+
+    def consume_reservation(self, identifier) -> PartReservation:
+        with self._unit_of_work_factory() as uow:
+            reservation = self._get_reservation(uow, identifier)
+            part = self._get_part(uow, reservation.part_id)
+            part.ensure_active()
+            ledger = StockLedger(tuple(uow.inventory_movements.list_for_part(part.id)))
+            movement = ledger.record(
+                part_id=part.id,
+                movement_type=InventoryMovementType.CONSUMPTION,
+                quantity=reservation.quantity,
+                reference_id=reservation.work_order_id,
+            )
+            reservation.consume()
+            uow.inventory_movements.add(movement)
+            uow.reservations.add(reservation)
+            return reservation
+
     @staticmethod
     def _get_part(uow: UnitOfWork, identifier):
         part = uow.parts.get(identifier)
         if part is None:
             raise EntityNotFoundError(f"Peça {identifier} não encontrada")
         return part
+
+    @staticmethod
+    def _get_reservation(uow: UnitOfWork, identifier) -> PartReservation:
+        reservation = uow.reservations.get(identifier)
+        if reservation is None:
+            raise EntityNotFoundError(f"Reserva {identifier} não encontrada")
+        if reservation.status is not ReservationStatus.ACTIVE:
+            raise DomainValidationError("Reserva não está ativa")
+        return reservation

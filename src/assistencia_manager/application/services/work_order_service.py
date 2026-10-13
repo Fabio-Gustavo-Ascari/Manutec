@@ -89,6 +89,7 @@ class WorkOrderService:
 
     @staticmethod
     def _reserve_parts(uow: UnitOfWork, order: WorkOrder) -> None:
+        active_by_part = {}
         for item in order.items:
             if item.kind != "part":
                 continue
@@ -99,11 +100,14 @@ class WorkOrderService:
                 raise EntityNotFoundError(f"Peça {item.part_id} não encontrada")
             part.ensure_active()
             ledger = StockLedger(tuple(uow.inventory_movements.list_for_part(part.id)))
-            active = tuple(uow.reservations.list_for_part(part.id, active_only=True))
+            active = active_by_part.setdefault(
+                part.id, list(uow.reservations.list_for_part(part.id, active_only=True))
+            )
             reservation = PartReservation.reserve(part_id=part.id, work_order_id=order.id, quantity=item.quantity)
-            if ledger.available_balance(part.id, active + (reservation,)) < 0:
+            if ledger.available_balance(part.id, (*active, reservation)) < 0:
                 raise DomainValidationError(f"Estoque insuficiente para a peça {part.name}")
             uow.reservations.add(reservation)
+            active.append(reservation)
 
     @staticmethod
     def _consume_parts(uow: UnitOfWork, order: WorkOrder) -> None:
