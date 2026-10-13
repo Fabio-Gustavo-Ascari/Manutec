@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from decimal import Decimal
 
 from assistencia_manager.domain.entities.work_order import WorkOrderStatus
@@ -15,6 +16,7 @@ class OpenWorkOrderCommand:
     reported_issue: str
     intake_checklist: tuple[str, ...] = ()
     notes: str | None = None
+    due_at: datetime | None = None
 
 
 @dataclass(frozen=True, slots=True)

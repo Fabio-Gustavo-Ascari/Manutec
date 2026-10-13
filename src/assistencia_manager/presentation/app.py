@@ -11,6 +11,11 @@ from assistencia_manager.application.services.work_order_service import WorkOrde
 from assistencia_manager.application.services.inventory_service import InventoryService
 from assistencia_manager.application.services.sales_service import SalesService
 from assistencia_manager.infrastructure.database.unit_of_work import SqlAlchemyUnitOfWork
+from assistencia_manager.infrastructure.database.session import create_session_factory
+from assistencia_manager.infrastructure.database.repositories.app_metadata import SqlAlchemyAppMetadataRepository
+from assistencia_manager.application.services.company_settings_service import CompanySettingsService
+from assistencia_manager.application.services.dashboard_service import DashboardService
+from assistencia_manager.application.services.report_service import ReportService
 from assistencia_manager.presentation.main_window import MainWindow
 
 
@@ -20,12 +25,16 @@ def run(argv: list[str] | None = None) -> int:
     application.setOrganizationName("Manutec")
     engine = initialize_database()
     unit_of_work_factory = lambda: SqlAlchemyUnitOfWork(engine)
+    metadata_factory = lambda: SqlAlchemyAppMetadataRepository(create_session_factory(engine)())
     window = MainWindow(
         ClientService(unit_of_work_factory),
         EquipmentService(unit_of_work_factory),
         WorkOrderService(unit_of_work_factory),
         InventoryService(unit_of_work_factory),
         SalesService(unit_of_work_factory),
+        DashboardService(unit_of_work_factory),
+        ReportService(unit_of_work_factory),
+        CompanySettingsService(metadata_factory),
     )
     window.show()
     return application.exec()

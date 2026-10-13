@@ -1,4 +1,6 @@
-from sqlalchemy import JSON, ForeignKey, Numeric, String
+from datetime import datetime
+
+from sqlalchemy import JSON, DateTime, ForeignKey, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from assistencia_manager.infrastructure.database.base import Base
@@ -18,3 +20,4 @@ class WorkOrderModel(Base):
     items: Mapped[list[dict]] = mapped_column(JSON, nullable=False)
     discount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     history: Mapped[list[dict]] = mapped_column(JSON, nullable=False)
+    due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)

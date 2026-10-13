@@ -82,6 +82,7 @@ class WorkOrder(Entity):
     items: list[WorkOrderItem] = field(default_factory=list)
     discount: Decimal = Decimal("0.00")
     history_entries: list[WorkOrderHistoryEntry] = field(default_factory=list, repr=False)
+    due_at: datetime | None = None
 
     @property
     def history(self) -> tuple[WorkOrderHistoryEntry, ...]:
@@ -96,6 +97,7 @@ class WorkOrder(Entity):
         reported_issue: str,
         intake_checklist: tuple[str, ...] = (),
         notes: str | None = None,
+        due_at: datetime | None = None,
     ) -> WorkOrder:
         if not isinstance(client_id, EntityId) or not isinstance(equipment_id, EntityId):
             raise DomainValidationError("Ordem deve possuir cliente e equipamento válidos")
@@ -105,6 +107,7 @@ class WorkOrder(Entity):
             reported_issue=_text(reported_issue, "Defeito relatado"),
             intake_checklist=tuple(item.strip() for item in intake_checklist if item.strip()),
             notes=notes.strip() if isinstance(notes, str) and notes.strip() else None,
+            due_at=due_at,
         )
         order._record("opened", "Ordem de serviço aberta")
         return order

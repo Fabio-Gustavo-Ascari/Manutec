@@ -31,6 +31,7 @@ class WorkOrderService:
                 reported_issue=command.reported_issue,
                 intake_checklist=command.intake_checklist,
                 notes=command.notes,
+                due_at=command.due_at,
             )
             uow.work_orders.add(order)
             return order

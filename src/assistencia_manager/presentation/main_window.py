@@ -14,6 +14,8 @@ from assistencia_manager.presentation.pages.equipment import EquipmentPage
 from assistencia_manager.presentation.pages.work_orders import WorkOrdersPage
 from assistencia_manager.presentation.pages.inventory import InventoryPage
 from assistencia_manager.presentation.pages.sales import SalesPage
+from assistencia_manager.presentation.pages.dashboard import DashboardPage
+from assistencia_manager.presentation.pages.settings import CompanySettingsPage
 
 
 class MainWindow(QMainWindow):
@@ -24,6 +26,9 @@ class MainWindow(QMainWindow):
         work_order_service: WorkOrderService | None = None,
         inventory_service: InventoryService | None = None,
         sales_service=None,
+        dashboard_service=None,
+        report_service=None,
+        company_settings_service=None,
     ) -> None:
         super().__init__()
         self.setWindowTitle("Manutec")
@@ -33,7 +38,9 @@ class MainWindow(QMainWindow):
         self.sidebar = Sidebar(PAGE_DEFINITIONS)
         self.stack = QStackedWidget()
         for title, description in PAGE_DEFINITIONS:
-            if title == "Clientes":
+            if title == "Dashboard":
+                page = DashboardPage(dashboard_service, report_service)
+            elif title == "Clientes":
                 page = ClientsPage(client_service)
             elif title == "Equipamentos":
                 page = EquipmentPage(equipment_service)
@@ -43,6 +50,8 @@ class MainWindow(QMainWindow):
                 page = InventoryPage(inventory_service)
             elif title == "Vendas":
                 page = SalesPage(sales_service)
+            elif title == "Configurações":
+                page = CompanySettingsPage(company_settings_service)
             else:
                 page = PlaceholderPage(title, description)
             self.stack.addWidget(page)
