@@ -4,11 +4,14 @@ from PySide6.QtCore import Qt
 from collections.abc import Iterable
 
 from PySide6.QtWidgets import (
+    QAbstractButton,
+    QAbstractSpinBox,
     QComboBox,
     QCompleter,
     QFrame,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
@@ -51,10 +54,37 @@ QPushButton { min-height: 34px; padding: 0 13px; border: 1px solid #d8e0ea; bord
 QPushButton:hover { background: #f1f5f9; }
 QPushButton#primaryAction { background: #2563eb; border-color: #2563eb; color: white; }
 QLineEdit, QComboBox, QSpinBox { min-height: 32px; border: 1px solid #cdd5e1; border-radius: 8px; padding: 0 8px; background: white; }
-QTableWidget { background: white; border: 1px solid #e4e9f0; border-radius: 8px; gridline-color: #edf0f5; }
+QPushButton:focus, QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QTableWidget:focus, QListWidget#navigation:focus { border: 2px solid #93c5fd; }
+QPushButton:disabled { color: #98a2b3; background: #f2f4f7; }
+QTableWidget { background: white; border: 1px solid #e4e9f0; border-radius: 8px; gridline-color: #edf0f5; selection-background-color: #dbeafe; selection-color: #172033; }
 QHeaderView::section { background: #f8fafc; padding: 8px; border: 0; font-weight: 600; color: #475467; }
 QStatusBar { background: #ffffff; border-top: 1px solid #e4e9f0; }
 """
+
+
+def apply_accessibility(root: QWidget) -> None:
+    """Apply shared keyboard and minimum-target rules to a page tree."""
+    for control in root.findChildren(QWidget):
+        if isinstance(control, QAbstractButton):
+            if not control.accessibleName():
+                control.setAccessibleName(control.text().strip() or "Ação")
+            control.setMinimumHeight(max(control.minimumHeight(), 40))
+            control.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        elif isinstance(control, QLineEdit):
+            if not control.accessibleName():
+                control.setAccessibleName(control.placeholderText() or "Campo de texto")
+            control.setMinimumHeight(max(control.minimumHeight(), 40))
+            control.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        elif isinstance(control, QComboBox):
+            if not control.accessibleName():
+                control.setAccessibleName("Campo de seleção")
+            control.setMinimumHeight(max(control.minimumHeight(), 40))
+            control.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        elif isinstance(control, QAbstractSpinBox):
+            if not control.accessibleName():
+                control.setAccessibleName("Campo numérico")
+            control.setMinimumHeight(max(control.minimumHeight(), 40))
+            control.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
 class SearchableComboBox(QComboBox):
     def __init__(self, parent: QWidget | None = None) -> None:

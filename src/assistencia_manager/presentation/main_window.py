@@ -17,7 +17,7 @@ from assistencia_manager.presentation.pages.sales import SalesPage
 from assistencia_manager.presentation.pages.dashboard import DashboardPage
 from assistencia_manager.presentation.pages.e23_pages import CompanySettingsPage, FinancePage, FiscalPage
 from assistencia_manager.presentation.pages.e24_pages import ReportsPage, AccessAuditPage
-from assistencia_manager.presentation.shell import APP_STYLE
+from assistencia_manager.presentation.shell import APP_STYLE, apply_accessibility
 
 
 class MainWindow(QMainWindow):
@@ -93,6 +93,7 @@ class MainWindow(QMainWindow):
         content_layout.addWidget(self.stack, 1)
         layout.addWidget(content, 1)
         self.setCentralWidget(central)
+        apply_accessibility(self)
         self.statusBar().showMessage("Pronto")
         self.dashboard_shortcut = QShortcut(QKeySequence("Ctrl+1"), self)
         self.dashboard_shortcut.activated.connect(lambda: self.sidebar.select_page("Dashboard"))
