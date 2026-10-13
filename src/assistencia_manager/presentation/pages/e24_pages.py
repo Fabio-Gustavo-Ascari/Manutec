@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -31,10 +32,12 @@ def _display(value: object) -> str:
 
 def _masked(value: object) -> str:
     text = "" if value is None else str(value)
-    for marker in ("senha", "password", "token", "document", "telefone", "phone", "email"):
-        parts = text.split()
-        text = " ".join("{}=••••".format(part.split("=", 1)[0]) if part.lower().startswith(marker + "=") else part for part in parts)
-    return text
+    markers = r"senha|password|token|document|telefone|phone|email"
+    pattern = re.compile(
+        rf"(?P<prefix>[\"']?(?:{markers})[\"']?\s*[:=]\s*[\"']?)(?P<secret>[^\"'\s,}}]+)",
+        re.IGNORECASE,
+    )
+    return pattern.sub(lambda match: f"{match.group('prefix')}••••", text)
 
 
 class ReportsPage(PageShell):

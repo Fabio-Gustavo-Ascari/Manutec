@@ -93,3 +93,26 @@ def test_access_workspace_edits_role_permissions_and_filters_masked_audit_histor
     assert access.updated[0] == "u1"
     assert any(permission.key == "reports:export" for permission in access.updated[1])
     page.close()
+
+
+def test_access_workspace_masks_sensitive_json_audit_details():
+    _app()
+    user = SimpleNamespace(id="u1", username="operator", display_name="Operador", role=UserRole.OPERATOR, active=True, permissions=frozenset())
+    audit = SimpleNamespace(
+        id="a2", user_id="u1", action="profile_updated", module="users", entity_type=None,
+        entity_id=None, details='{"password":"segredo", "email":"cliente@example.com", "ok":"preservar"}',
+        created_at=datetime.now(timezone.utc),
+    )
+
+    class Access:
+        def list_users(self): return (user,)
+
+    class Audit:
+        def list(self, **kwargs): return (audit,)
+
+    page = AccessAuditPage(Access(), Audit())
+    details = page.audit_table.item(0, 4).text()
+    assert "segredo" not in details
+    assert "cliente@example.com" not in details
+    assert "preservar" in details
+    page.close()
