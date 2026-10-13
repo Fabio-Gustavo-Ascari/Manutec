@@ -44,6 +44,7 @@ class EquipmentService:
                 serial_number=command.serial_number,
                 accessories=command.accessories,
             )
+            unit_of_work.equipment.add(equipment)
             return equipment
 
     def get(self, identifier: EntityId) -> Equipment:
@@ -63,4 +64,5 @@ class EquipmentService:
             if equipment is None:
                 raise EntityNotFoundError(f"Equipamento {identifier} não encontrado")
             equipment.deactivate()
+            unit_of_work.equipment.add(equipment)
             return equipment

@@ -38,6 +38,7 @@ class ClientService:
                 address=command.address,
                 notes=command.notes,
             )
+            unit_of_work.clients.add(client)
             return client
 
     def get(self, identifier: EntityId) -> Client:
@@ -57,4 +58,5 @@ class ClientService:
             if client is None:
                 raise EntityNotFoundError(f"Cliente {identifier} não encontrado")
             client.deactivate()
+            unit_of_work.clients.add(client)
             return client

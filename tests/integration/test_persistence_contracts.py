@@ -1,5 +1,9 @@
 from sqlalchemy import text
 
+from assistencia_manager.application.dto.client import CreateClientCommand, UpdateClientCommand
+from assistencia_manager.application.services.client_service import ClientService
+from assistencia_manager.bootstrap import initialize_database
+from assistencia_manager.infrastructure.config.paths import AppPaths
 from assistencia_manager.infrastructure.database.engine import create_engine
 from assistencia_manager.infrastructure.database.unit_of_work import SqlAlchemyUnitOfWork
 from assistencia_manager.infrastructure.database.repositories import (
@@ -44,5 +48,24 @@ def test_unit_of_work_exposes_business_repositories(tmp_path):
     with SqlAlchemyUnitOfWork(engine) as unit_of_work:
         assert isinstance(unit_of_work.clients, SqlAlchemyClientRepository)
         assert isinstance(unit_of_work.equipment, SqlAlchemyEquipmentRepository)
+
+    engine.dispose()
+
+
+def test_client_service_persists_update_and_deactivation(tmp_path, monkeypatch):
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    engine = initialize_database(AppPaths.default())
+    service = ClientService(lambda: SqlAlchemyUnitOfWork(engine))
+
+    client = service.create(CreateClientCommand(name="Antigo"))
+    service.update(UpdateClientCommand(identifier=client.id, name="Novo"))
+    service.deactivate(client.id)
+
+    with SqlAlchemyUnitOfWork(engine) as unit_of_work:
+        loaded = unit_of_work.clients.get(client.id)
+
+        assert loaded is not None
+        assert loaded.name == "Novo"
+        assert loaded.status.value == "inactive"
 
     engine.dispose()
