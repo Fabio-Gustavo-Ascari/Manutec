@@ -95,3 +95,6 @@ class InventoryPage(QWidget):
             self.refresh()
         except (DomainError, ValueError) as error:
             QMessageBox.warning(self, "Não foi possível movimentar o estoque", str(error))
+
+
+from assistencia_manager.presentation.pages.e10_pages import InventoryPage as InventoryPage

@@ -61,3 +61,6 @@ class SalesPage(QWidget):
             payment = self.service.record_payment(RecordPaymentCommand(self.sale.id, Decimal(self.payment_input.text()), PaymentMethod.PIX))
             self.status.setText(f"Recebido {payment.amount} — pagamento {payment.id}")
         except (DomainError, ValueError) as error: QMessageBox.warning(self, "Não foi possível registrar o pagamento", str(error))
+
+
+from assistencia_manager.presentation.pages.e10_pages import SalesPage as SalesPage

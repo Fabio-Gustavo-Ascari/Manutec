@@ -75,3 +75,7 @@ class WorkOrdersPage(QWidget):
             self.refresh()
         except (DomainError, ValueError) as error:
             QMessageBox.warning(self, "Não foi possível alterar a ordem", str(error))
+
+
+# E10 keeps the historical import path stable while using the redesigned page.
+from assistencia_manager.presentation.pages.e10_pages import WorkOrdersPage as WorkOrdersPage

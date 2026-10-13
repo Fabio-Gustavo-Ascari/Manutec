@@ -16,6 +16,7 @@ from assistencia_manager.presentation.pages.inventory import InventoryPage
 from assistencia_manager.presentation.pages.sales import SalesPage
 from assistencia_manager.presentation.pages.dashboard import DashboardPage
 from assistencia_manager.presentation.pages.settings import CompanySettingsPage
+from assistencia_manager.presentation.shell import APP_STYLE
 
 
 class MainWindow(QMainWindow):
@@ -31,6 +32,7 @@ class MainWindow(QMainWindow):
         company_settings_service=None,
     ) -> None:
         super().__init__()
+        self.setStyleSheet(APP_STYLE)
         self.setWindowTitle("Manutec")
         self.resize(1366, 768)
         self.setMinimumSize(1024, 640)
@@ -45,11 +47,11 @@ class MainWindow(QMainWindow):
             elif title == "Equipamentos":
                 page = EquipmentPage(equipment_service)
             elif title == "Ordens de serviço":
-                page = WorkOrdersPage(work_order_service)
+                page = WorkOrdersPage(work_order_service, client_service, equipment_service)
             elif title == "Estoque":
                 page = InventoryPage(inventory_service)
             elif title == "Vendas":
-                page = SalesPage(sales_service)
+                page = SalesPage(sales_service, client_service, inventory_service)
             elif title == "Configurações":
                 page = CompanySettingsPage(company_settings_service)
             else:
