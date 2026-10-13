@@ -29,26 +29,69 @@ Organizar o trabalho diário de assistências técnicas, reunindo clientes, equi
 
 ## Desenvolvimento local
 
-Requer Python 3.13:
+Requisitos:
+
+- Windows com Python 3.13 disponível pelo launcher `py`;
+- PowerShell;
+- Git.
+
+### Preparar o ambiente
+
+Execute os comandos a partir da pasta do projeto:
 
 ```powershell
 py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
-pytest
+```
+
+Se o PowerShell bloquear a ativação do ambiente, permita scripts apenas para a
+sessão atual:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+
+### Executar testes
+
+```powershell
+python -m pytest
+```
+
+### Executar o aplicativo
+
+```powershell
 python -m assistencia_manager
 ```
 
-Os dados da aplicação serão armazenados em `%LOCALAPPDATA%\Manutec`, fora do diretório do executável.
+### Banco de dados
+
+O banco local é inicializado automaticamente ao executar a aplicação. Para
+aplicar as migrações manualmente no banco definido em `alembic.ini`:
+
+```powershell
+python -m alembic upgrade head
+```
+
+Os dados da aplicação ficam em `%LOCALAPPDATA%\Manutec`, fora do diretório do
+executável. Isso inclui o banco SQLite, logs e backups locais.
 
 ## Arquitetura
 
-O código é organizado em camadas para manter a interface, as regras de negócio e a persistência independentes:
+O código é organizado em camadas. A interface chama os casos de uso da
+Application; as regras ficam no Domain; e a Infrastructure implementa os
+contratos de persistência e fornece os adaptadores técnicos.
 
 ```text
-Presentation → Application → Domain
-                    ↓
-              Infrastructure
+Presentation
+      │
+      ▼
+Application ───────► Domain
+      │                  ▲
+      │                  │ implementa contratos
+      └────────────── Infrastructure
 ```
 
 ## Licença
