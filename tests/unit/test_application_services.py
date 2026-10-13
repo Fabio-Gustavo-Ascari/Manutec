@@ -183,3 +183,64 @@ def test_invalid_client_update_is_rolled_back(unit_of_work: InMemoryUnitOfWork):
 
     assert unit_of_work.clients.get(client.id).name == "Antigo"
     assert unit_of_work.rollbacks == 1
+
+
+def test_client_service_consults_lists_and_inactivates_clients(
+    unit_of_work: InMemoryUnitOfWork,
+):
+    from assistencia_manager.application.dto.client import CreateClientCommand
+    from assistencia_manager.application.services.client_service import ClientService
+
+    service = ClientService(lambda: unit_of_work)
+    first = service.create(CreateClientCommand(name="Primeiro"))
+    second = service.create(CreateClientCommand(name="Segundo"))
+
+    assert service.get(first.id) is first
+    assert service.list() == (first, second)
+
+    inactive = service.deactivate(first.id)
+
+    assert inactive is first
+    assert inactive.status.value == "inactive"
+    assert service.get(first.id) is first
+
+
+def test_equipment_service_consults_lists_and_inactivates_equipment(
+    unit_of_work: InMemoryUnitOfWork,
+):
+    from assistencia_manager.application.dto.client import CreateClientCommand
+    from assistencia_manager.application.dto.equipment import CreateEquipmentCommand
+    from assistencia_manager.application.services.client_service import ClientService
+    from assistencia_manager.application.services.equipment_service import EquipmentService
+
+    client = ClientService(lambda: unit_of_work).create(CreateClientCommand(name="Cliente"))
+    service = EquipmentService(lambda: unit_of_work)
+    first = service.create(CreateEquipmentCommand(client_id=client.id, equipment_type="Notebook"))
+    second = service.create(CreateEquipmentCommand(client_id=client.id, equipment_type="Desktop"))
+
+    assert service.get(first.id) is first
+    assert service.list() == (first, second)
+
+    inactive = service.deactivate(first.id)
+
+    assert inactive is first
+    assert inactive.status.value == "inactive"
+    assert service.get(first.id) is first
+
+
+def test_query_and_inactivate_raise_when_entity_does_not_exist(
+    unit_of_work: InMemoryUnitOfWork,
+):
+    from assistencia_manager.application.services.client_service import ClientService
+    from assistencia_manager.application.services.equipment_service import EquipmentService
+
+    identifier = EntityId.new()
+
+    with pytest.raises(EntityNotFoundError):
+        ClientService(lambda: unit_of_work).get(identifier)
+    with pytest.raises(EntityNotFoundError):
+        ClientService(lambda: unit_of_work).deactivate(identifier)
+    with pytest.raises(EntityNotFoundError):
+        EquipmentService(lambda: unit_of_work).get(identifier)
+    with pytest.raises(EntityNotFoundError):
+        EquipmentService(lambda: unit_of_work).deactivate(identifier)

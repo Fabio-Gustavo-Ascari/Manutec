@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from collections.abc import Sequence
 
 from assistencia_manager.application.dto.client import CreateClientCommand, UpdateClientCommand
 from assistencia_manager.domain.entities.client import Client
 from assistencia_manager.domain.exceptions import EntityNotFoundError
+from assistencia_manager.domain.identifiers import EntityId
 from assistencia_manager.domain.unit_of_work import UnitOfWork
 
 
@@ -36,4 +38,23 @@ class ClientService:
                 address=command.address,
                 notes=command.notes,
             )
+            return client
+
+    def get(self, identifier: EntityId) -> Client:
+        with self._unit_of_work_factory() as unit_of_work:
+            client = unit_of_work.clients.get(identifier)
+            if client is None:
+                raise EntityNotFoundError(f"Cliente {identifier} não encontrado")
+            return client
+
+    def list(self) -> Sequence[Client]:
+        with self._unit_of_work_factory() as unit_of_work:
+            return tuple(unit_of_work.clients.list())
+
+    def deactivate(self, identifier: EntityId) -> Client:
+        with self._unit_of_work_factory() as unit_of_work:
+            client = unit_of_work.clients.get(identifier)
+            if client is None:
+                raise EntityNotFoundError(f"Cliente {identifier} não encontrado")
+            client.deactivate()
             return client

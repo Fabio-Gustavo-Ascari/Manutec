@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from collections.abc import Sequence
 
 from assistencia_manager.application.dto.equipment import (
     CreateEquipmentCommand,
@@ -8,6 +9,7 @@ from assistencia_manager.application.dto.equipment import (
 )
 from assistencia_manager.domain.entities.equipment import Equipment
 from assistencia_manager.domain.exceptions import EntityNotFoundError
+from assistencia_manager.domain.identifiers import EntityId
 from assistencia_manager.domain.unit_of_work import UnitOfWork
 
 
@@ -42,4 +44,23 @@ class EquipmentService:
                 serial_number=command.serial_number,
                 accessories=command.accessories,
             )
+            return equipment
+
+    def get(self, identifier: EntityId) -> Equipment:
+        with self._unit_of_work_factory() as unit_of_work:
+            equipment = unit_of_work.equipment.get(identifier)
+            if equipment is None:
+                raise EntityNotFoundError(f"Equipamento {identifier} não encontrado")
+            return equipment
+
+    def list(self) -> Sequence[Equipment]:
+        with self._unit_of_work_factory() as unit_of_work:
+            return tuple(unit_of_work.equipment.list())
+
+    def deactivate(self, identifier: EntityId) -> Equipment:
+        with self._unit_of_work_factory() as unit_of_work:
+            equipment = unit_of_work.equipment.get(identifier)
+            if equipment is None:
+                raise EntityNotFoundError(f"Equipamento {identifier} não encontrado")
+            equipment.deactivate()
             return equipment
