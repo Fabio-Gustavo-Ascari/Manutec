@@ -63,4 +63,4 @@ class SalesPage(QWidget):
         except (DomainError, ValueError) as error: QMessageBox.warning(self, "Não foi possível registrar o pagamento", str(error))
 
 
-from assistencia_manager.presentation.pages.e10_pages import SalesPage as SalesPage
+from assistencia_manager.presentation.pages.e21_pages import SalesPage as SalesPage

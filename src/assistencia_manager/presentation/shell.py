@@ -33,6 +33,8 @@ QFrame#appHeader { background: #ffffff; border-bottom: 1px solid #e4e9f0; }
 QLabel#brandLabel { font-size: 16px; font-weight: 700; }
 QLabel#contextLabel { color: #667085; }
 QFrame#pageCard, QFrame#metricCard, QFrame#emptyState, QFrame#filterBar { background: #ffffff; border: 1px solid #e4e9f0; border-radius: 14px; }
+QFrame#operationPanel, QFrame#checkoutPanel, QFrame#saleHeader { background: #ffffff; border: 1px solid #e4e9f0; border-radius: 10px; }
+QFrame#checkoutPanel { background: #f8fafc; }
 QFrame#metricCard[accent="primary"] { border-top: 3px solid #2563eb; }
 QFrame#metricCard[accent="success"] { border-top: 3px solid #138a62; }
 QFrame#metricCard[accent="warning"] { border-top: 3px solid #b7791f; }
@@ -41,6 +43,10 @@ QLabel#pageTitle { font-size: 24px; font-weight: 700; }
 QLabel#pageSubtitle, QLabel#metricCaption, QLabel#emptyDescription { color: #667085; }
 QLabel#metricValue { font-size: 25px; font-weight: 700; }
 QLabel#sectionTitle { font-size: 15px; font-weight: 700; }
+QLabel#detailTitle { font-size: 17px; font-weight: 700; }
+QLabel#statusPill { color: #2563eb; font-weight: 700; }
+QLabel#salesTotal { background: #172033; color: white; border-radius: 10px; padding: 18px; font-size: 24px; font-weight: 700; }
+QLabel#salesChange { color: #138a62; font-size: 16px; font-weight: 700; padding: 8px 0; }
 QPushButton { min-height: 34px; padding: 0 13px; border: 1px solid #d8e0ea; border-radius: 8px; background: #ffffff; font-weight: 600; }
 QPushButton:hover { background: #f1f5f9; }
 QPushButton#primaryAction { background: #2563eb; border-color: #2563eb; color: white; }
