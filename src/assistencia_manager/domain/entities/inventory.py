@@ -76,12 +76,20 @@ class Part(Entity):
     cost: Decimal = Decimal("0.00")
     price: Decimal = Decimal("0.00")
     minimum_stock: Decimal = Decimal("0")
+    barcode: str | None = None
+    brand: str | None = None
+    supplier_id: EntityId | None = None
+    location: str | None = None
+    warranty_days: int = 0
+    promotional_price: Decimal | None = None
 
     @classmethod
     def create(
         cls, *, name: str, category: str, unit: str, cost: Decimal | int | str,
         price: Decimal | int | str, minimum_stock: Decimal | int | str = 0,
-        sku: str | None = None,
+        sku: str | None = None, barcode: str | None = None, brand: str | None = None,
+        supplier_id: EntityId | None = None, location: str | None = None, warranty_days: int = 0,
+        promotional_price: Decimal | int | str | None = None,
     ) -> Part:
         normalized_sku = sku.strip().upper() if isinstance(sku, str) and sku.strip() else None
         return cls(
@@ -89,6 +97,9 @@ class Part(Entity):
             unit=_text(unit, "Unidade"), sku=normalized_sku,
             cost=_money(cost, "Custo"), price=_money(price, "Preço"),
             minimum_stock=_nonnegative_quantity(minimum_stock, "Estoque mínimo"),
+            barcode=barcode.strip() if barcode else None, brand=brand.strip() if brand else None,
+            supplier_id=supplier_id, location=location.strip() if location else None,
+            warranty_days=warranty_days, promotional_price=_money(promotional_price, "Preço promocional") if promotional_price is not None else None,
         )
 
     def __post_init__(self) -> None:
@@ -98,6 +109,10 @@ class Part(Entity):
         self.cost = _money(self.cost, "Custo")
         self.price = _money(self.price, "Preço")
         self.minimum_stock = _nonnegative_quantity(self.minimum_stock, "Estoque mínimo")
+        if self.warranty_days < 0:
+            raise DomainValidationError("Garantia não pode ser negativa")
+        if self.promotional_price is not None:
+            self.promotional_price = _money(self.promotional_price, "Preço promocional")
 
 
 @dataclass(frozen=True, slots=True)

@@ -4,7 +4,7 @@ from sqlalchemy import inspect
 
 from assistencia_manager.bootstrap import initialize_database
 from assistencia_manager.infrastructure.config.paths import AppPaths
-from assistencia_manager.infrastructure.database.models import ClientModel, EquipmentModel
+from assistencia_manager.infrastructure.database.models import ClientModel, EquipmentModel, CatalogEntryModel, ServiceModel
 
 
 def test_business_models_define_expected_tables_and_relationship_columns():
@@ -28,5 +28,16 @@ def test_database_migration_creates_business_tables_and_foreign_key(tmp_path, mo
         foreign_key["referred_table"] == "clients"
         and foreign_key["constrained_columns"] == ["client_id"]
         for foreign_key in foreign_keys
+    )
+    engine.dispose()
+
+
+def test_e11_migration_creates_complete_catalog_tables(tmp_path, monkeypatch):
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    engine = initialize_database(AppPaths.default())
+    tables = set(inspect(engine).get_table_names())
+    assert {"catalog_entries", "services", "service_packages", "warranty_rules"}.issubset(tables)
+    assert {"barcode", "brand", "supplier_id", "location", "warranty_days", "promotional_price"}.issubset(
+        {column["name"] for column in inspect(engine).get_columns("parts")}
     )
     engine.dispose()

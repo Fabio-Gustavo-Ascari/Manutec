@@ -16,6 +16,12 @@ class CreatePartCommand:
     cost: Decimal = Decimal("0.00")
     price: Decimal = Decimal("0.00")
     minimum_stock: Decimal = Decimal("0")
+    barcode: str | None = None
+    brand: str | None = None
+    supplier_id: EntityId | None = None
+    location: str | None = None
+    warranty_days: int = 0
+    promotional_price: Decimal | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,6 +33,12 @@ class UpdatePartCommand:
     cost: Decimal
     price: Decimal
     minimum_stock: Decimal
+    barcode: str | None = None
+    brand: str | None = None
+    supplier_id: EntityId | None = None
+    location: str | None = None
+    warranty_days: int = 0
+    promotional_price: Decimal | None = None
 
 
 @dataclass(frozen=True, slots=True)

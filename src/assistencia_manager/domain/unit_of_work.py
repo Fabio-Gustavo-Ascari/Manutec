@@ -21,6 +21,10 @@ class UnitOfWork(Protocol):
     sales: SaleRepository
     payments: PaymentRepository
     cash_registers: CashRegisterRepository
+    catalogs: object
+    services: object
+    service_packages: object
+    warranty_rules: object
 
     def __enter__(self) -> Self: ...
 

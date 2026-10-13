@@ -6,9 +6,11 @@ from assistencia_manager.infrastructure.database.models.inventory import (
     InventoryMovementModel, PartModel, PartReservationModel,
 )
 from assistencia_manager.infrastructure.database.models.sales import CashRegisterModel, PaymentModel, SaleModel
+from assistencia_manager.infrastructure.database.models.catalog import CatalogEntryModel, ServiceModel, ServicePackageModel, WarrantyRuleModel
 
 __all__ = [
     "AppMetadata", "ClientModel", "EquipmentModel", "WorkOrderModel",
     "PartModel", "InventoryMovementModel", "PartReservationModel",
     "SaleModel", "PaymentModel", "CashRegisterModel",
+    "CatalogEntryModel", "ServiceModel", "ServicePackageModel", "WarrantyRuleModel",
 ]

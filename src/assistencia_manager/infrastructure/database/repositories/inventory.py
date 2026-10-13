@@ -23,7 +23,9 @@ class SqlAlchemyPartRepository:
         self._session.merge(PartModel(
             id=str(entity.id), name=entity.name, category=entity.category, unit=entity.unit,
             sku=entity.sku, cost=entity.cost, price=entity.price,
-            minimum_stock=entity.minimum_stock, status=entity.status.value,
+            minimum_stock=entity.minimum_stock, barcode=entity.barcode, brand=entity.brand,
+            supplier_id=str(entity.supplier_id) if entity.supplier_id else None, location=entity.location,
+            warranty_days=entity.warranty_days, promotional_price=entity.promotional_price, status=entity.status.value,
         ))
 
     def get(self, identifier: EntityId) -> Part | None:
@@ -58,6 +60,10 @@ class SqlAlchemyPartRepository:
             category=model.category, unit=model.unit, sku=model.sku,
             cost=Decimal(str(model.cost)), price=Decimal(str(model.price)),
             minimum_stock=Decimal(str(model.minimum_stock)),
+            barcode=model.barcode, brand=model.brand,
+            supplier_id=EntityId.from_str(model.supplier_id) if model.supplier_id else None,
+            location=model.location, warranty_days=model.warranty_days,
+            promotional_price=Decimal(str(model.promotional_price)) if model.promotional_price is not None else None,
         )
 
 

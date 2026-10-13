@@ -20,4 +20,5 @@ def test_page_definitions_are_stable():
         "Estoque",
         "Vendas",
         "Configurações",
+        "Cadastros",
     }
