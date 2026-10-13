@@ -10,15 +10,12 @@ from assistencia_manager.application.services.work_order_service import WorkOrde
 from assistencia_manager.application.services.inventory_service import InventoryService
 from assistencia_manager.presentation.navigation.sidebar import Sidebar
 from assistencia_manager.presentation.pages import PAGE_DEFINITIONS, PlaceholderPage
-from assistencia_manager.presentation.pages.clients import ClientsPage
-from assistencia_manager.presentation.pages.equipment import EquipmentPage
+from assistencia_manager.presentation.pages.e22_pages import ClientsPage, EquipmentPage, CatalogsPage, PurchasesPage
 from assistencia_manager.presentation.pages.work_orders import WorkOrdersPage
 from assistencia_manager.presentation.pages.inventory import InventoryPage
 from assistencia_manager.presentation.pages.sales import SalesPage
 from assistencia_manager.presentation.pages.dashboard import DashboardPage
 from assistencia_manager.presentation.pages.settings import CompanySettingsPage
-from assistencia_manager.presentation.pages.catalogs import CatalogsPage
-from assistencia_manager.presentation.pages.purchases import PurchasesPage
 from assistencia_manager.presentation.pages.finance import FinancePage
 from assistencia_manager.presentation.pages.fiscal import FiscalPage
 from assistencia_manager.presentation.pages.reports import ReportsPage

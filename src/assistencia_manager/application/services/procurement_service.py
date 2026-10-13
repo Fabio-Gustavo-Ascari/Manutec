@@ -82,6 +82,11 @@ class ProcurementService:
                     suggestions.append(ReorderSuggestion(part.id, current, max(Decimal("0"), target - current)))
             return tuple(suggestions)
 
+    def list_orders(self):
+        """Return purchase orders for operational presentation and review."""
+        with self._unit_of_work_factory() as uow:
+            return tuple(uow.purchase_orders.list())
+
     @staticmethod
     def _part(uow: UnitOfWork, part_id):
         part = uow.parts.get(part_id)
