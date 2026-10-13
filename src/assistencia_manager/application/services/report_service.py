@@ -5,6 +5,7 @@ from collections.abc import Callable, Iterable
 from pathlib import Path
 
 from assistencia_manager.domain.entities.work_order import WorkOrder
+from assistencia_manager.domain.entities.procurement import PurchaseOrder
 
 
 class ReportService:
@@ -28,4 +29,19 @@ class ReportService:
             writer.writerow(("id", "status", "due_at", "total"))
             for order in orders:
                 writer.writerow((str(order.id), order.status.value, order.due_at or "", f"{order.total:.2f}"))
+        return destination
+
+    def purchase_orders(self, *, status: str | None = None) -> tuple[PurchaseOrder, ...]:
+        with self._unit_of_work_factory() as uow:
+            values = tuple(getattr(uow.purchase_orders, "list", lambda: ())())
+        return tuple(order for order in values if not status or order.status.value == status)
+
+    def export_purchase_orders_csv(self, orders: Iterable[PurchaseOrder], destination: Path) -> Path:
+        destination = Path(destination)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        with destination.open("w", newline="", encoding="utf-8") as stream:
+            writer = csv.writer(stream)
+            writer.writerow(("id", "supplier_id", "status", "due_date", "total"))
+            for order in orders:
+                writer.writerow((str(order.id), str(order.supplier_id), order.status.value, order.due_date or "", f"{order.total:.2f}"))
         return destination

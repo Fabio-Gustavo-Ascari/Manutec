@@ -18,6 +18,7 @@ def test_page_definitions_are_stable():
         "Equipamentos",
         "Ordens de serviço",
         "Estoque",
+            "Compras",
         "Vendas",
         "Configurações",
         "Cadastros",

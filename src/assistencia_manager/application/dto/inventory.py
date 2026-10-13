@@ -16,6 +16,7 @@ class CreatePartCommand:
     cost: Decimal = Decimal("0.00")
     price: Decimal = Decimal("0.00")
     minimum_stock: Decimal = Decimal("0")
+    maximum_stock: Decimal = Decimal("0")
     barcode: str | None = None
     brand: str | None = None
     supplier_id: EntityId | None = None
@@ -33,6 +34,7 @@ class UpdatePartCommand:
     cost: Decimal
     price: Decimal
     minimum_stock: Decimal
+    maximum_stock: Decimal = Decimal("0")
     barcode: str | None = None
     brand: str | None = None
     supplier_id: EntityId | None = None

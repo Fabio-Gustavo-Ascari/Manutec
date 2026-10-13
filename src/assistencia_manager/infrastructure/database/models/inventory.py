@@ -20,6 +20,7 @@ class PartModel(Base):
     cost: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     minimum_stock: Mapped[Decimal] = mapped_column(Numeric(14, 4), nullable=False)
+    maximum_stock: Mapped[Decimal] = mapped_column(Numeric(14, 4), nullable=False, default=0)
     barcode: Mapped[str | None] = mapped_column(String(80), nullable=True, unique=True)
     brand: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
     supplier_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)

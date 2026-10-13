@@ -24,6 +24,7 @@ class SqlAlchemyPartRepository:
             id=str(entity.id), name=entity.name, category=entity.category, unit=entity.unit,
             sku=entity.sku, cost=entity.cost, price=entity.price,
             minimum_stock=entity.minimum_stock, barcode=entity.barcode, brand=entity.brand,
+            maximum_stock=entity.maximum_stock,
             supplier_id=str(entity.supplier_id) if entity.supplier_id else None, location=entity.location,
             warranty_days=entity.warranty_days, promotional_price=entity.promotional_price, status=entity.status.value,
         ))
@@ -64,6 +65,7 @@ class SqlAlchemyPartRepository:
             category=model.category, unit=model.unit, sku=model.sku,
             cost=Decimal(str(model.cost)), price=Decimal(str(model.price)),
             minimum_stock=Decimal(str(model.minimum_stock)),
+            maximum_stock=Decimal(str(model.maximum_stock or 0)),
             barcode=model.barcode, brand=model.brand,
             supplier_id=EntityId.from_str(model.supplier_id) if model.supplier_id else None,
             location=model.location, warranty_days=model.warranty_days,

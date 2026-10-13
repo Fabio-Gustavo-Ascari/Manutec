@@ -27,6 +27,7 @@ class InventoryService:
             part = Part.create(**command.__dict__) if hasattr(command, "__dict__") else Part.create(
                 name=command.name, category=command.category, unit=command.unit, sku=command.sku,
                 cost=command.cost, price=command.price, minimum_stock=command.minimum_stock,
+                maximum_stock=command.maximum_stock,
                 barcode=command.barcode, brand=command.brand, supplier_id=command.supplier_id,
                 location=command.location, warranty_days=command.warranty_days, promotional_price=command.promotional_price,
             )
@@ -50,6 +51,7 @@ class InventoryService:
             replacement = Part.create(
                 name=part.name, category=part.category, unit=part.unit, sku=part.sku,
                 cost=command.cost, price=command.price, minimum_stock=command.minimum_stock,
+                maximum_stock=command.maximum_stock,
                 barcode=command.barcode, brand=command.brand, supplier_id=command.supplier_id,
                 location=command.location, warranty_days=command.warranty_days, promotional_price=command.promotional_price,
             )

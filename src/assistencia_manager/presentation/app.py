@@ -17,6 +17,7 @@ from assistencia_manager.application.services.company_settings_service import Co
 from assistencia_manager.application.services.dashboard_service import DashboardService
 from assistencia_manager.application.services.report_service import ReportService
 from assistencia_manager.application.services.catalog_service import CatalogService
+from assistencia_manager.application.services.procurement_service import ProcurementService
 from assistencia_manager.presentation.main_window import MainWindow
 
 
@@ -37,6 +38,7 @@ def run(argv: list[str] | None = None) -> int:
         ReportService(unit_of_work_factory),
         CompanySettingsService(metadata_factory),
         CatalogService(unit_of_work_factory),
+        ProcurementService(unit_of_work_factory),
     )
     window.show()
     return application.exec()

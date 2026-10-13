@@ -18,6 +18,7 @@ from assistencia_manager.infrastructure.database.repositories.sales import (
 )
 from assistencia_manager.infrastructure.database.repositories.app_metadata import SqlAlchemyAppMetadataRepository
 from assistencia_manager.infrastructure.database.repositories.catalog import SqlAlchemyCatalogRepository, SqlAlchemyServiceRepository, SqlAlchemyServicePackageRepository, SqlAlchemyWarrantyRuleRepository
+from assistencia_manager.infrastructure.database.repositories.procurement import SqlAlchemyPurchaseOrderRepository
 
 __all__ = [
     "SqlAlchemyClientRepository", "SqlAlchemyEquipmentRepository", "SqlAlchemyWorkOrderRepository",
@@ -26,4 +27,5 @@ __all__ = [
     "SqlAlchemySaleRepository", "SqlAlchemyPaymentRepository", "SqlAlchemyCashRegisterRepository",
     "SqlAlchemyAppMetadataRepository",
     "SqlAlchemyCatalogRepository", "SqlAlchemyServiceRepository", "SqlAlchemyServicePackageRepository", "SqlAlchemyWarrantyRuleRepository",
+    "SqlAlchemyPurchaseOrderRepository",
 ]

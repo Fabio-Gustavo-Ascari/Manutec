@@ -25,6 +25,7 @@ class UnitOfWork(Protocol):
     services: object
     service_packages: object
     warranty_rules: object
+    purchase_orders: object
 
     def __enter__(self) -> Self: ...
 
