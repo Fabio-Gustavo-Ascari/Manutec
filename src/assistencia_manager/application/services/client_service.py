@@ -1,0 +1,39 @@
+from __future__ import annotations
+
+from collections.abc import Callable
+
+from assistencia_manager.application.dto.client import CreateClientCommand, UpdateClientCommand
+from assistencia_manager.domain.entities.client import Client
+from assistencia_manager.domain.exceptions import EntityNotFoundError
+from assistencia_manager.domain.unit_of_work import UnitOfWork
+
+
+class ClientService:
+    def __init__(self, unit_of_work_factory: Callable[[], UnitOfWork]) -> None:
+        self._unit_of_work_factory = unit_of_work_factory
+
+    def create(self, command: CreateClientCommand) -> Client:
+        with self._unit_of_work_factory() as unit_of_work:
+            client = Client(
+                name=command.name,
+                contacts=command.contacts,
+                document=command.document,
+                address=command.address,
+                notes=command.notes,
+            )
+            unit_of_work.clients.add(client)
+            return client
+
+    def update(self, command: UpdateClientCommand) -> Client:
+        with self._unit_of_work_factory() as unit_of_work:
+            client = unit_of_work.clients.get(command.identifier)
+            if client is None:
+                raise EntityNotFoundError(f"Cliente {command.identifier} não encontrado")
+            client.update(
+                name=command.name,
+                contacts=command.contacts,
+                document=command.document,
+                address=command.address,
+                notes=command.notes,
+            )
+            return client
