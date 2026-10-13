@@ -26,7 +26,7 @@ def test_main_window_contains_client_and_equipment_pages():
     assert isinstance(window.stack.widget(2), EquipmentPage)
     assert isinstance(window.stack.widget(3), WorkOrdersPage)
     assert isinstance(window.stack.widget(4), InventoryPage)
-    assert window.sidebar.navigation.count() == window.stack.count()
+    assert len(window.sidebar.page_titles) == window.stack.count()
 
     window.close()
     application.quit()

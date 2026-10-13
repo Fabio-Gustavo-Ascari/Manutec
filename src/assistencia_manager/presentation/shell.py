@@ -23,6 +23,15 @@ VISUAL_TOKENS = {
 
 APP_STYLE = """
 QMainWindow, QWidget { background: #f4f7fb; color: #172033; }
+QWidget#sidebar { background: #172033; }
+QListWidget#navigation { background: transparent; border: 0; color: #cbd5e1; outline: 0; }
+QListWidget#navigation::item { padding: 9px 10px; border-radius: 7px; }
+QListWidget#navigation::item:selected { background: #2563eb; color: white; }
+QListWidget#navigation::item:focus { border: 1px solid #93c5fd; }
+QListWidget#navigation::item[data-type="section"] { color: #94a3b8; padding: 15px 10px 5px; font-size: 11px; font-weight: 700; }
+QFrame#appHeader { background: #ffffff; border-bottom: 1px solid #e4e9f0; }
+QLabel#brandLabel { font-size: 16px; font-weight: 700; }
+QLabel#contextLabel { color: #667085; }
 QFrame#pageCard, QFrame#metricCard, QFrame#emptyState, QFrame#filterBar { background: #ffffff; border: 1px solid #e4e9f0; border-radius: 14px; }
 QFrame#metricCard[accent="primary"] { border-top: 3px solid #2563eb; }
 QFrame#metricCard[accent="success"] { border-top: 3px solid #138a62; }
