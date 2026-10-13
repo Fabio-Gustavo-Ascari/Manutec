@@ -39,3 +39,9 @@ class SalesReceiptService:
         canvas.drawString(40, y, f"Saldo: R$ {sale.remaining_amount:.2f}")
         canvas.save()
         return destination
+
+    def generate_quote(self, sale: Sale, destination: Path, company: Mapping[str, str]) -> Path:
+        """Gera o orçamento do carrinho sem exigir que a venda esteja concluída."""
+        return self.generate(sale, destination, company)
+
+    generate_budget = generate_quote

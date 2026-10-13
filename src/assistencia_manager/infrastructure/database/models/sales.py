@@ -10,6 +10,8 @@ class SaleModel(Base):
     __tablename__ = "sales"
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     client_id: Mapped[str | None] = mapped_column(ForeignKey("clients.id"), nullable=True, index=True)
+    seller_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
+    quote_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     work_order_id: Mapped[str | None] = mapped_column(ForeignKey("work_orders.id"), nullable=True, index=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     items: Mapped[list[dict]] = mapped_column(JSON, nullable=False)

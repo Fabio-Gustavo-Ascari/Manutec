@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from assistencia_manager.application.dto.sales import (
     AddSaleItemCommand, CashMovementCommand, CreateSaleCommand, OpenCashCommand,
+    RemoveSaleItemCommand, UpdateSaleItemCommand,
     ReceiveWorkOrderCommand, RecordPaymentCommand,
 )
 from assistencia_manager.domain.entities.inventory import InventoryMovementType, StockLedger
@@ -19,14 +20,28 @@ class SalesService:
 
     def create(self, command: CreateSaleCommand) -> Sale:
         with self._unit_of_work_factory() as uow:
-            sale = Sale.create(command.client_id, command.work_order_id)
+            sale = Sale.create(command.client_id, command.work_order_id, command.seller_id, command.quote_id)
             uow.sales.add(sale)
             return sale
 
     def add_item(self, command: AddSaleItemCommand) -> Sale:
         with self._unit_of_work_factory() as uow:
             sale = self._sale(uow, command.sale_id)
-            sale.add_item(description=command.description, quantity=command.quantity, unit_price=command.unit_price, part_id=command.part_id)
+            sale.add_item(description=command.description, quantity=command.quantity, unit_price=command.unit_price, part_id=command.part_id, discount=command.discount)
+            uow.sales.add(sale)
+            return sale
+
+    def update_item(self, command: UpdateSaleItemCommand) -> Sale:
+        with self._unit_of_work_factory() as uow:
+            sale = self._sale(uow, command.sale_id)
+            sale.update_item(command.index, quantity=command.quantity, unit_price=command.unit_price, discount=command.discount)
+            uow.sales.add(sale)
+            return sale
+
+    def remove_item(self, command: RemoveSaleItemCommand) -> Sale:
+        with self._unit_of_work_factory() as uow:
+            sale = self._sale(uow, command.sale_id)
+            sale.remove_item(command.index)
             uow.sales.add(sale)
             return sale
 
@@ -51,6 +66,14 @@ class SalesService:
                 for item in sale.items:
                     if item.part_id is not None:
                         uow.inventory_movements.add(StockLedger(tuple(uow.inventory_movements.list_for_part(item.part_id))).record(part_id=item.part_id, movement_type=InventoryMovementType.RETURN, quantity=item.quantity, reference_id=sale.id, note="Estorno da venda"))
+                for payment in tuple(sale.payments):
+                    if payment.status.value == "paid":
+                        payment.reverse()
+                        uow.payments.add(payment)
+                        register = uow.cash_registers.current_open()
+                        if register:
+                            register.record(amount=payment.amount, description=f"Cancelamento {sale.id}", movement_type="out")
+                            uow.cash_registers.add(register)
             uow.sales.add(sale)
             return sale
 

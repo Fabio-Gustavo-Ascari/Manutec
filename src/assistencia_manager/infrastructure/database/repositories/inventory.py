@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from assistencia_manager.domain.entities.base import EntityStatus
@@ -44,13 +44,17 @@ class SqlAlchemyPartRepository:
     def search(self, term: str | None, active_only: bool, offset: int, limit: int) -> tuple[Part, ...]:
         statement = select(PartModel)
         if active_only: statement = statement.where(PartModel.status == EntityStatus.ACTIVE.value)
-        if term and term.strip(): statement = statement.where(PartModel.name.ilike(f"%{term.strip()}%"))
+        if term and term.strip():
+            value = f"%{term.strip()}%"
+            statement = statement.where(or_(PartModel.name.ilike(value), PartModel.sku.ilike(value), PartModel.barcode.ilike(value)))
         return tuple(self._to_entity(item) for item in self._session.scalars(statement.order_by(PartModel.name).offset(offset).limit(limit)))
 
     def count(self, term: str | None, active_only: bool) -> int:
         statement = select(PartModel.id)
         if active_only: statement = statement.where(PartModel.status == EntityStatus.ACTIVE.value)
-        if term and term.strip(): statement = statement.where(PartModel.name.ilike(f"%{term.strip()}%"))
+        if term and term.strip():
+            value = f"%{term.strip()}%"
+            statement = statement.where(or_(PartModel.name.ilike(value), PartModel.sku.ilike(value), PartModel.barcode.ilike(value)))
         return self._session.scalar(select(func.count()).select_from(statement.subquery())) or 0
 
     @staticmethod

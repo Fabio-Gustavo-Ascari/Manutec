@@ -17,9 +17,11 @@ class SqlAlchemySaleRepository:
     def add(self, entity: Sale) -> None:
         self._session.merge(SaleModel(
             id=str(entity.id), client_id=str(entity.client_id) if entity.client_id else None,
+            seller_id=str(entity.seller_id) if entity.seller_id else None,
+            quote_id=str(entity.quote_id) if entity.quote_id else None,
             work_order_id=str(entity.work_order_id) if entity.work_order_id else None,
             status=entity.status.value,
-            items=[{"description": i.description, "quantity": str(i.quantity), "unit_price": str(i.unit_price), "part_id": str(i.part_id) if i.part_id else None} for i in entity.items],
+            items=[{"description": i.description, "quantity": str(i.quantity), "unit_price": str(i.unit_price), "discount": str(i.discount), "part_id": str(i.part_id) if i.part_id else None} for i in entity.items],
         ))
 
     def get(self, identifier: EntityId) -> Sale | None:
@@ -41,8 +43,8 @@ class SqlAlchemySaleRepository:
 
     @staticmethod
     def _to_entity(model: SaleModel) -> Sale:
-        sale = Sale(id=EntityId.from_str(model.id), client_id=EntityId.from_str(model.client_id) if model.client_id else None, work_order_id=EntityId.from_str(model.work_order_id) if model.work_order_id else None, status=SaleStatus(model.status), items=[])
-        sale.items = [SaleItem(i["description"], Decimal(i["quantity"]), Decimal(i["unit_price"]), EntityId.from_str(i["part_id"]) if i.get("part_id") else None) for i in model.items or ()]
+        sale = Sale(id=EntityId.from_str(model.id), client_id=EntityId.from_str(model.client_id) if model.client_id else None, seller_id=EntityId.from_str(model.seller_id) if model.seller_id else None, quote_id=EntityId.from_str(model.quote_id) if model.quote_id else None, work_order_id=EntityId.from_str(model.work_order_id) if model.work_order_id else None, status=SaleStatus(model.status), items=[])
+        sale.items = [SaleItem(i["description"], Decimal(i["quantity"]), Decimal(i["unit_price"]), EntityId.from_str(i["part_id"]) if i.get("part_id") else None, Decimal(i.get("discount", "0"))) for i in model.items or ()]
         return sale
 
 

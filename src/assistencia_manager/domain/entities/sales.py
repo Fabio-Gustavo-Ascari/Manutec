@@ -39,7 +39,9 @@ class SaleStatus(Enum):
 
 class PaymentMethod(Enum):
     CASH = "cash"
-    CARD = "card"
+    DEBIT = "debit"
+    CREDIT = "credit"
+    CARD = "card"  # compatibilidade com vendas gravadas antes da E13
     PIX = "pix"
     TRANSFER = "transfer"
 
@@ -55,27 +57,31 @@ class SaleItem:
     quantity: Decimal
     unit_price: Decimal
     part_id: EntityId | None = None
+    discount: Decimal = Decimal("0.00")
 
     @property
     def amount(self) -> Decimal:
-        return (self.quantity * self.unit_price).quantize(MONEY, rounding=ROUND_HALF_UP)
+        return max(Decimal("0.00"), (self.quantity * self.unit_price - self.discount)).quantize(MONEY, rounding=ROUND_HALF_UP)
 
 
 @dataclass(eq=False, slots=True)
 class Sale(Entity):
     client_id: EntityId | None = None
+    seller_id: EntityId | None = None
+    quote_id: EntityId | None = None
     work_order_id: EntityId | None = None
     status: SaleStatus = SaleStatus.OPEN
     items: list[SaleItem] = field(default_factory=list)
     payments: list[Payment] = field(default_factory=list, repr=False)
 
     @classmethod
-    def create(cls, client_id: EntityId | None = None, work_order_id: EntityId | None = None) -> Sale:
-        if client_id is not None and not isinstance(client_id, EntityId):
-            raise DomainValidationError("Cliente da venda deve ser válido")
-        if work_order_id is not None and not isinstance(work_order_id, EntityId):
-            raise DomainValidationError("Ordem da venda deve ser válida")
-        return cls(client_id=client_id, work_order_id=work_order_id)
+    def create(cls, client_id: EntityId | None = None, work_order_id: EntityId | None = None,
+               seller_id: EntityId | None = None, quote_id: EntityId | None = None) -> Sale:
+        for value, label in ((client_id, "Cliente"), (work_order_id, "Ordem"),
+                             (seller_id, "Vendedor"), (quote_id, "Orçamento")):
+            if value is not None and not isinstance(value, EntityId):
+                raise DomainValidationError(f"{label} da venda deve ser válido")
+        return cls(client_id=client_id, seller_id=seller_id, quote_id=quote_id, work_order_id=work_order_id)
 
     @property
     def total(self) -> Decimal:
@@ -89,6 +95,10 @@ class Sale(Entity):
     def remaining_amount(self) -> Decimal:
         return max(Decimal("0.00"), self.total - self.paid_amount).quantize(MONEY)
 
+    @property
+    def change(self) -> Decimal:
+        return max(Decimal("0.00"), self.paid_amount - self.total).quantize(MONEY)
+
     def add_payment(self, payment: Payment) -> None:
         if self.status is SaleStatus.CANCELLED:
             raise DomainValidationError("Venda cancelada não aceita pagamentos")
@@ -96,19 +106,48 @@ class Sale(Entity):
             raise DomainValidationError("Pagamento não pertence à venda")
         if payment.status is PaymentStatus.REVERSED:
             raise DomainValidationError("Pagamento estornado não pode ser registrado")
-        if self.paid_amount + payment.amount > self.total:
+        if self.paid_amount + payment.amount > self.total and payment.method is not PaymentMethod.CASH:
             raise DomainValidationError("Pagamento supera o saldo da venda")
         self.payments.append(payment)
 
+    def record_payment(self, *, amount: Decimal | int | str, method: PaymentMethod, installments: int = 1) -> Payment:
+        payment = Payment.record(sale_id=self.id, amount=amount, method=method, installments=installments)
+        self.add_payment(payment)
+        return payment
+
     def add_item(self, *, description: str, quantity: Decimal | int | str,
-                 unit_price: Decimal | int | str, part_id: EntityId | None = None) -> None:
+                 unit_price: Decimal | int | str, part_id: EntityId | None = None,
+                 discount: Decimal | int | str = 0) -> None:
         if self.status is not SaleStatus.OPEN:
             raise DomainValidationError("Venda encerrada não pode ser alterada")
         if not isinstance(description, str) or not description.strip():
             raise DomainValidationError("Descrição não pode ser vazia")
         if part_id is not None and not isinstance(part_id, EntityId):
             raise DomainValidationError("Peça da venda deve ser válida")
-        self.items.append(SaleItem(description.strip(), _quantity(quantity), _money(unit_price, "Preço"), part_id))
+        price = _money(unit_price, "Preço")
+        discount_value = _money(discount, "Desconto")
+        if discount_value > price * _quantity(quantity):
+            raise DomainValidationError("Desconto não pode superar o item")
+        self.items.append(SaleItem(description.strip(), _quantity(quantity), price, part_id, discount_value))
+
+    def update_item(self, index: int, *, quantity: Decimal | int | str, unit_price: Decimal | int | str,
+                    discount: Decimal | int | str = 0) -> None:
+        if self.status is not SaleStatus.OPEN:
+            raise DomainValidationError("Venda encerrada não pode ser alterada")
+        if not isinstance(index, int) or index < 0 or index >= len(self.items):
+            raise DomainValidationError("Item da venda não encontrado")
+        current = self.items[index]
+        replacement = SaleItem(current.description, _quantity(quantity), _money(unit_price, "Preço"), current.part_id, _money(discount, "Desconto"))
+        if replacement.discount > replacement.quantity * replacement.unit_price:
+            raise DomainValidationError("Desconto não pode superar o item")
+        self.items[index] = replacement
+
+    def remove_item(self, index: int) -> None:
+        if self.status is not SaleStatus.OPEN:
+            raise DomainValidationError("Venda encerrada não pode ser alterada")
+        if not isinstance(index, int) or index < 0 or index >= len(self.items):
+            raise DomainValidationError("Item da venda não encontrado")
+        self.items.pop(index)
 
     def complete(self) -> None:
         if self.status is not SaleStatus.OPEN:

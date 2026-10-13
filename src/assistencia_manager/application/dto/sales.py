@@ -9,6 +9,8 @@ from assistencia_manager.domain.identifiers import EntityId
 class CreateSaleCommand:
     client_id: EntityId | None = None
     work_order_id: EntityId | None = None
+    seller_id: EntityId | None = None
+    quote_id: EntityId | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,6 +20,22 @@ class AddSaleItemCommand:
     quantity: Decimal
     unit_price: Decimal
     part_id: EntityId | None = None
+    discount: Decimal = Decimal("0.00")
+
+
+@dataclass(frozen=True, slots=True)
+class UpdateSaleItemCommand:
+    sale_id: EntityId
+    index: int
+    quantity: Decimal
+    unit_price: Decimal
+    discount: Decimal = Decimal("0.00")
+
+
+@dataclass(frozen=True, slots=True)
+class RemoveSaleItemCommand:
+    sale_id: EntityId
+    index: int
 
 
 @dataclass(frozen=True, slots=True)

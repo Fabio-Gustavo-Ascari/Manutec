@@ -101,12 +101,13 @@ class WorkOrdersPage(QWidget):
 class SalesPage(QWidget):
     def __init__(self, service=None, client_service=None, inventory_service=None):
         super().__init__(); self.service, self.client_service, self.inventory_service, self.sale = service, client_service, inventory_service, None; self._parts = {}
-        self.client_input = SearchableComboBox(); self.product_input = SearchableComboBox(); self.description_input = QLineEdit(); self.quantity_input = QLineEdit("1"); self.price_input = QLineEdit("0"); self.discount_input = QLineEdit("0"); self.received_input = QLineEdit("0")
+        self.client_input = SearchableComboBox(); self.product_input = SearchableComboBox(); self.product_search_input = QLineEdit(); self.search_input = self.product_search_input; self.product_search_input.setPlaceholderText("Descrição, SKU ou código de barras")
+        self.description_input = QLineEdit(); self.quantity_input = QLineEdit("1"); self.price_input = QLineEdit("0"); self.discount_input = QLineEdit("0"); self.received_input = QLineEdit("0"); self.seller_input = QLineEdit(); self.quote_input = QLineEdit()
         self.payment_method = QComboBox(); [self.payment_method.addItem(m.value.replace("_", " ").title(), m) for m in PaymentMethod]
         self.items_table = QTableWidget(0, 5); self.items_table.setHorizontalHeaderLabels(["Produto", "Qtd.", "Preço", "Desconto", "Total"]); self.total_label = QLabel("Total: R$ 0,00"); self.change_label = QLabel("Troco: R$ 0,00"); self.status = QLabel("Nenhuma venda aberta")
-        self.product_input.currentIndexChanged.connect(self._product_selected); self.discount_input.textChanged.connect(self._update_totals); self.received_input.textChanged.connect(self._update_totals)
+        self.product_input.currentIndexChanged.connect(self._product_selected); self.product_search_input.textChanged.connect(self._load_products); self.discount_input.textChanged.connect(self._update_totals); self.received_input.textChanged.connect(self._update_totals)
         create = QPushButton("Nova venda"); create.clicked.connect(self._create); add = QPushButton("Adicionar item"); add.clicked.connect(self._add); complete = QPushButton("Concluir venda"); complete.setObjectName("primaryAction"); complete.clicked.connect(self._complete); pay = QPushButton("Registrar pagamento"); pay.clicked.connect(self._pay)
-        form = QFormLayout(); form.addRow("Cliente", self.client_input); form.addRow("Produto/peça", self.product_input); form.addRow("Descrição", self.description_input); form.addRow("Quantidade", self.quantity_input); form.addRow("Preço unitário", self.price_input); form.addRow("Desconto", self.discount_input); form.addRow("Recebido", self.received_input); form.addRow("Forma de pagamento", self.payment_method)
+        form = QFormLayout(); form.addRow("Cliente", self.client_input); form.addRow("Vendedor", self.seller_input); form.addRow("Orçamento", self.quote_input); form.addRow("Buscar produto", self.product_search_input); form.addRow("Produto/peça", self.product_input); form.addRow("Descrição", self.description_input); form.addRow("Quantidade", self.quantity_input); form.addRow("Preço unitário", self.price_input); form.addRow("Desconto", self.discount_input); form.addRow("Recebido", self.received_input); form.addRow("Forma de pagamento", self.payment_method)
         actions = QHBoxLayout(); [actions.addWidget(x) for x in (create, add, complete, pay)]; summary = QHBoxLayout(); summary.addWidget(self.total_label); summary.addWidget(self.change_label); summary.addStretch()
         shell = PageShell("Vendas e caixa", "Carrinho, desconto, recebimento e troco"); shell.body.addLayout(form); shell.body.addLayout(actions); shell.body.addWidget(self.items_table, 1); shell.body.addLayout(summary); shell.body.addWidget(self.status); layout = QVBoxLayout(self); layout.setContentsMargins(18, 18, 18, 18); layout.addWidget(shell); self._load_data()
 
@@ -115,9 +116,13 @@ class SalesPage(QWidget):
             try: populate_combo(self.client_input, self.client_service.search(ClientSearchQuery()).items, lambda x: x.name)
             except Exception: pass
         if self.inventory_service:
-            try:
-                result = self.inventory_service.search(PartSearchQuery(page_size=100)); self._parts = {str(x.id): x for x in result.items}; populate_combo(self.product_input, result.items, lambda x: f"{x.name} — {x.sku or 'sem SKU'}")
-            except Exception: pass
+            self._load_products()
+
+    def _load_products(self):
+        if not self.inventory_service: return
+        try:
+            result = self.inventory_service.search(PartSearchQuery(self.product_search_input.text().strip() or None, page_size=100)); self._parts = {str(x.id): x for x in result.items}; populate_combo(self.product_input, result.items, lambda x: f"{x.name} — {x.sku or x.barcode or 'sem código'}")
+        except Exception: pass
 
     def _product_selected(self):
         part = self._parts.get(str(self.product_input.currentData()))
@@ -130,7 +135,7 @@ class SalesPage(QWidget):
 
     def _add(self):
         if not self.service or not self.sale: return
-        try: self.sale = self.service.add_item(AddSaleItemCommand(self.sale.id, self.description_input.text(), Decimal(self.quantity_input.text()), Decimal(self.price_input.text()), self.product_input.currentData())); self._render_items()
+        try: self.sale = self.service.add_item(AddSaleItemCommand(self.sale.id, self.description_input.text(), Decimal(self.quantity_input.text()), Decimal(self.price_input.text()), self.product_input.currentData(), Decimal(self.discount_input.text() or "0"))); self._render_items()
         except (DomainError, ValueError, InvalidOperation) as error: QMessageBox.warning(self, "Não foi possível adicionar o item", str(error))
 
     def _render_items(self):
@@ -141,9 +146,9 @@ class SalesPage(QWidget):
 
     def _update_totals(self):
         total = self.sale.total if self.sale else Decimal("0")
-        try: discount, received = Decimal(self.discount_input.text() or "0"), Decimal(self.received_input.text() or "0")
-        except InvalidOperation: discount, received = Decimal("0"), Decimal("0")
-        total = max(Decimal("0"), total - discount); self.total_label.setText(f"Total: R$ {total:.2f}"); self.change_label.setText(f"Troco: R$ {max(Decimal('0'), received-total):.2f}")
+        try: received = Decimal(self.received_input.text() or "0")
+        except InvalidOperation: received = Decimal("0")
+        self.total_label.setText(f"Total: R$ {total:.2f}"); self.change_label.setText(f"Troco: R$ {max(Decimal('0'), received-total):.2f}")
 
     def _complete(self):
         if not self.service or not self.sale: return
