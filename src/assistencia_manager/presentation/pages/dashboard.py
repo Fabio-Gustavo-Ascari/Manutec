@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtWidgets import QFileDialog, QFormLayout, QLabel, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QFileDialog, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from assistencia_manager.application.services.dashboard_service import DashboardService
 from assistencia_manager.application.services.report_service import ReportService
+from assistencia_manager.presentation.shell import DashboardMetricCard, PageShell
 
 
 class DashboardPage(QWidget):
@@ -13,39 +15,80 @@ class DashboardPage(QWidget):
         super().__init__()
         self.dashboard_service = dashboard_service
         self.report_service = report_service
-        self.orders_label = QLabel()
-        self.overdue_label = QLabel()
-        self.revenue_label = QLabel()
-        self.stock_label = QLabel()
-        refresh = QPushButton("Atualizar indicadores")
-        export = QPushButton("Exportar relatório de ordens")
+        refresh = QPushButton("Atualizar")
         refresh.clicked.connect(self.refresh)
+        self.page_shell = PageShell("Dashboard", "Resumo operacional da assistência", actions=[refresh])
+        self.metric_cards = {
+            "orders": DashboardMetricCard("Ordens em andamento", accent="primary"),
+            "overdue": DashboardMetricCard("Ordens atrasadas", accent="danger"),
+            "revenue": DashboardMetricCard("Receita recebida", accent="success"),
+            "stock": DashboardMetricCard("Peças no estoque mínimo", accent="warning"),
+        }
+        self.orders_label = self.metric_cards["orders"].value_label
+        self.overdue_label = self.metric_cards["overdue"].value_label
+        self.revenue_label = self.metric_cards["revenue"].value_label
+        self.stock_label = self.metric_cards["stock"].value_label
+        metrics = QGridLayout()
+        metrics.setHorizontalSpacing(12)
+        metrics.setVerticalSpacing(12)
+        for index, card in enumerate(self.metric_cards.values()):
+            metrics.addWidget(card, index // 2, index % 2)
+        metrics.setColumnStretch(0, 1)
+        metrics.setColumnStretch(1, 1)
+        self.quick_actions = QHBoxLayout()
+        for text, slot, primary in (
+            ("Nova ordem de serviço", self._quick_order, True),
+            ("Registrar venda", self._quick_sale, False),
+            ("Repor estoque", self._quick_stock, False),
+        ):
+            button = QPushButton(text)
+            if primary:
+                button.setObjectName("primaryAction")
+            button.clicked.connect(slot)
+            self.quick_actions.addWidget(button)
+        self.status_summary = QLabel()
+        self.status_summary.setObjectName("pageSubtitle")
+        export = QPushButton("Exportar relatório de ordens")
         export.clicked.connect(self.export_orders)
-        form = QFormLayout()
-        form.addRow("Ordens por status", self.orders_label)
-        form.addRow("Ordens atrasadas", self.overdue_label)
-        form.addRow("Receita recebida", self.revenue_label)
-        form.addRow("Peças no estoque mínimo", self.stock_label)
-        layout = QVBoxLayout(self)
-        layout.addWidget(QLabel("Dashboard operacional"))
-        layout.addLayout(form)
-        layout.addWidget(refresh)
-        layout.addWidget(export)
+        layout = QVBoxLayout()
+        layout.addLayout(metrics)
+        layout.addWidget(QLabel("Ações rápidas"), alignment=Qt.AlignmentFlag.AlignLeft)
+        layout.addLayout(self.quick_actions)
+        layout.addWidget(QLabel("Distribuição por status"), alignment=Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.status_summary)
+        layout.addWidget(export, alignment=Qt.AlignmentFlag.AlignLeft)
         layout.addStretch()
+        self.page_shell.body.addLayout(layout)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(18, 18, 18, 18)
+        outer.addWidget(self.page_shell)
         self.refresh()
 
     def refresh(self) -> None:
         if self.dashboard_service is None:
-            self.orders_label.setText("Serviço não configurado")
-            self.overdue_label.setText("-")
-            self.revenue_label.setText("-")
-            self.stock_label.setText("-")
+            for card in self.metric_cards.values():
+                card.set_value("—", "Serviço não configurado")
+            self.status_summary.setText("Configure o serviço para carregar os indicadores.")
             return
         snapshot = self.dashboard_service.snapshot()
-        self.orders_label.setText(", ".join(f"{key}: {value}" for key, value in sorted(snapshot.orders_by_status.items())) or "Nenhuma")
-        self.overdue_label.setText(str(snapshot.overdue_orders))
-        self.revenue_label.setText(f"R$ {snapshot.received_revenue:.2f}")
-        self.stock_label.setText(str(snapshot.low_stock_parts))
+        total_orders = sum(snapshot.orders_by_status.values())
+        self.metric_cards["orders"].set_value(str(total_orders), "total no fluxo")
+        self.metric_cards["overdue"].set_value(str(snapshot.overdue_orders), "exigem atenção")
+        self.metric_cards["revenue"].set_value(f"R$ {snapshot.received_revenue:.2f}", "recebido")
+        self.metric_cards["stock"].set_value(str(snapshot.low_stock_parts), "itens para reposição")
+        self.status_summary.setText(", ".join(f"{key}: {value}" for key, value in sorted(snapshot.orders_by_status.items())) or "Nenhuma ordem registrada")
+
+    def _quick_order(self) -> None:
+        self.statusBarMessage("Abertura de ordem disponível na tela de Ordens de serviço.")
+
+    def _quick_sale(self) -> None:
+        self.statusBarMessage("Registro de venda disponível na tela de Vendas.")
+
+    def _quick_stock(self) -> None:
+        self.statusBarMessage("Reposição disponível na tela de Estoque.")
+
+    def statusBarMessage(self, message: str) -> None:
+        self.status_summary.setText(message)
 
     def export_orders(self) -> None:
         if self.report_service is None:
