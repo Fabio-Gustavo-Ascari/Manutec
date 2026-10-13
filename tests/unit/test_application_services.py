@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
+from copy import deepcopy
 
 import pytest
 
 from assistencia_manager.domain.entities.client import Client
 from assistencia_manager.domain.entities.equipment import Equipment
-from assistencia_manager.domain.exceptions import EntityNotFoundError
+from assistencia_manager.domain.exceptions import DomainValidationError, EntityNotFoundError
 from assistencia_manager.domain.identifiers import EntityId
 
 
@@ -56,8 +57,10 @@ class InMemoryUnitOfWork:
         self.equipment = InMemoryEquipmentRepository()
         self.commits = 0
         self.rollbacks = 0
+        self._snapshot: tuple[dict[EntityId, Client], dict[EntityId, Equipment]] | None = None
 
     def __enter__(self) -> InMemoryUnitOfWork:
+        self._snapshot = (deepcopy(self.clients.items), deepcopy(self.equipment.items))
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
@@ -71,6 +74,8 @@ class InMemoryUnitOfWork:
 
     def rollback(self) -> None:
         self.rollbacks += 1
+        if self._snapshot is not None:
+            self.clients.items, self.equipment.items = deepcopy(self._snapshot)
 
 
 @pytest.fixture
@@ -162,3 +167,19 @@ def test_services_raise_when_entity_to_update_does_not_exist(unit_of_work: InMem
         EquipmentService(lambda: unit_of_work).update(
             UpdateEquipmentCommand(identifier=EntityId.new(), equipment_type="Notebook")
         )
+
+
+def test_invalid_client_update_is_rolled_back(unit_of_work: InMemoryUnitOfWork):
+    from assistencia_manager.application.dto.client import UpdateClientCommand
+    from assistencia_manager.application.services.client_service import ClientService
+
+    client = Client(name="Antigo")
+    unit_of_work.clients.add(client)
+
+    with pytest.raises(DomainValidationError):
+        ClientService(lambda: unit_of_work).update(
+            UpdateClientCommand(identifier=client.id, name="Novo", contacts=(object(),))
+        )
+
+    assert unit_of_work.clients.get(client.id).name == "Antigo"
+    assert unit_of_work.rollbacks == 1
