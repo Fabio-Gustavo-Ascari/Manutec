@@ -13,6 +13,7 @@ from assistencia_manager.presentation.pages.clients import ClientsPage
 from assistencia_manager.presentation.pages.equipment import EquipmentPage
 from assistencia_manager.presentation.pages.work_orders import WorkOrdersPage
 from assistencia_manager.presentation.pages.inventory import InventoryPage
+from assistencia_manager.presentation.pages.sales import SalesPage
 
 
 class MainWindow(QMainWindow):
@@ -22,6 +23,7 @@ class MainWindow(QMainWindow):
         equipment_service: EquipmentService | None = None,
         work_order_service: WorkOrderService | None = None,
         inventory_service: InventoryService | None = None,
+        sales_service=None,
     ) -> None:
         super().__init__()
         self.setWindowTitle("Manutec")
@@ -39,6 +41,8 @@ class MainWindow(QMainWindow):
                 page = WorkOrdersPage(work_order_service)
             elif title == "Estoque":
                 page = InventoryPage(inventory_service)
+            elif title == "Vendas":
+                page = SalesPage(sales_service)
             else:
                 page = PlaceholderPage(title, description)
             self.stack.addWidget(page)

@@ -7,6 +7,7 @@ from assistencia_manager.domain.entities.client import Client
 from assistencia_manager.domain.entities.equipment import Equipment
 from assistencia_manager.domain.entities.work_order import WorkOrder
 from assistencia_manager.domain.entities.inventory import InventoryMovement, Part, PartReservation
+from assistencia_manager.domain.entities.sales import CashRegister, Payment, Sale
 from assistencia_manager.domain.identifiers import EntityId
 
 EntityT = TypeVar("EntityT")
@@ -75,4 +76,16 @@ class PartReservationRepository(Protocol):
     def get(self, identifier: EntityId) -> PartReservation | None: ...
     def list_for_part(self, part_id: EntityId, active_only: bool = False) -> Sequence[PartReservation]: ...
     def list_for_work_order(self, work_order_id: EntityId, active_only: bool = False) -> Sequence[PartReservation]: ...
+
+
+class SaleRepository(Repository[Sale], Protocol):
+    def list_for_work_order(self, work_order_id: EntityId) -> Sequence[Sale]: ...
+
+
+class PaymentRepository(Repository[Payment], Protocol):
+    def list_for_sale(self, sale_id: EntityId) -> Sequence[Payment]: ...
+
+
+class CashRegisterRepository(Repository[CashRegister], Protocol):
+    def current_open(self) -> CashRegister | None: ...
 

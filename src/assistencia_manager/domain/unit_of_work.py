@@ -5,6 +5,7 @@ from typing import Protocol, Self
 from assistencia_manager.domain.repositories import (
     ClientRepository, EquipmentRepository, InventoryMovementRepository,
     PartRepository, PartReservationRepository, WorkOrderRepository,
+    SaleRepository, PaymentRepository, CashRegisterRepository,
 )
 
 
@@ -17,6 +18,9 @@ class UnitOfWork(Protocol):
     parts: PartRepository
     inventory_movements: InventoryMovementRepository
     reservations: PartReservationRepository
+    sales: SaleRepository
+    payments: PaymentRepository
+    cash_registers: CashRegisterRepository
 
     def __enter__(self) -> Self: ...
 
@@ -25,4 +29,6 @@ class UnitOfWork(Protocol):
     def commit(self) -> None: ...
 
     def rollback(self) -> None: ...
+
+    def flush(self) -> None: ...
 

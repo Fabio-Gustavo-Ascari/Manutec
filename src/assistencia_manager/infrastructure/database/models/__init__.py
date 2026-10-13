@@ -5,8 +5,10 @@ from assistencia_manager.infrastructure.database.models.work_order import WorkOr
 from assistencia_manager.infrastructure.database.models.inventory import (
     InventoryMovementModel, PartModel, PartReservationModel,
 )
+from assistencia_manager.infrastructure.database.models.sales import CashRegisterModel, PaymentModel, SaleModel
 
 __all__ = [
     "AppMetadata", "ClientModel", "EquipmentModel", "WorkOrderModel",
     "PartModel", "InventoryMovementModel", "PartReservationModel",
+    "SaleModel", "PaymentModel", "CashRegisterModel",
 ]

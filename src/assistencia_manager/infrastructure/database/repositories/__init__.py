@@ -13,9 +13,13 @@ from assistencia_manager.infrastructure.database.repositories.inventory import (
     SqlAlchemyInventoryMovementRepository, SqlAlchemyPartRepository,
     SqlAlchemyPartReservationRepository,
 )
+from assistencia_manager.infrastructure.database.repositories.sales import (
+    SqlAlchemyCashRegisterRepository, SqlAlchemyPaymentRepository, SqlAlchemySaleRepository,
+)
 
 __all__ = [
     "SqlAlchemyClientRepository", "SqlAlchemyEquipmentRepository", "SqlAlchemyWorkOrderRepository",
     "SqlAlchemyPartRepository", "SqlAlchemyInventoryMovementRepository",
     "SqlAlchemyPartReservationRepository",
+    "SqlAlchemySaleRepository", "SqlAlchemyPaymentRepository", "SqlAlchemyCashRegisterRepository",
 ]

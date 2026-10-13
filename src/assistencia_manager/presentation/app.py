@@ -9,6 +9,7 @@ from assistencia_manager.application.services.client_service import ClientServic
 from assistencia_manager.application.services.equipment_service import EquipmentService
 from assistencia_manager.application.services.work_order_service import WorkOrderService
 from assistencia_manager.application.services.inventory_service import InventoryService
+from assistencia_manager.application.services.sales_service import SalesService
 from assistencia_manager.infrastructure.database.unit_of_work import SqlAlchemyUnitOfWork
 from assistencia_manager.presentation.main_window import MainWindow
 
@@ -24,6 +25,7 @@ def run(argv: list[str] | None = None) -> int:
         EquipmentService(unit_of_work_factory),
         WorkOrderService(unit_of_work_factory),
         InventoryService(unit_of_work_factory),
+        SalesService(unit_of_work_factory),
     )
     window.show()
     return application.exec()

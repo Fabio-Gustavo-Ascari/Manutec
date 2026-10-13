@@ -10,6 +10,7 @@ from assistencia_manager.infrastructure.database.repositories import (
     SqlAlchemyWorkOrderRepository,
     SqlAlchemyInventoryMovementRepository, SqlAlchemyPartRepository,
     SqlAlchemyPartReservationRepository,
+    SqlAlchemySaleRepository, SqlAlchemyPaymentRepository, SqlAlchemyCashRegisterRepository,
 )
 
 
@@ -25,6 +26,9 @@ class SqlAlchemyUnitOfWork:
         self.parts: SqlAlchemyPartRepository | None = None
         self.inventory_movements: SqlAlchemyInventoryMovementRepository | None = None
         self.reservations: SqlAlchemyPartReservationRepository | None = None
+        self.sales: SqlAlchemySaleRepository | None = None
+        self.payments: SqlAlchemyPaymentRepository | None = None
+        self.cash_registers: SqlAlchemyCashRegisterRepository | None = None
 
     def __enter__(self) -> SqlAlchemyUnitOfWork:
         self.session = self._session_factory()
@@ -34,6 +38,9 @@ class SqlAlchemyUnitOfWork:
         self.parts = SqlAlchemyPartRepository(self.session)
         self.inventory_movements = SqlAlchemyInventoryMovementRepository(self.session)
         self.reservations = SqlAlchemyPartReservationRepository(self.session)
+        self.sales = SqlAlchemySaleRepository(self.session)
+        self.payments = SqlAlchemyPaymentRepository(self.session)
+        self.cash_registers = SqlAlchemyCashRegisterRepository(self.session)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
@@ -52,6 +59,9 @@ class SqlAlchemyUnitOfWork:
                 self.parts = None
                 self.inventory_movements = None
                 self.reservations = None
+                self.sales = None
+                self.payments = None
+                self.cash_registers = None
 
     def commit(self) -> None:
         if self.session is None:
@@ -61,4 +71,9 @@ class SqlAlchemyUnitOfWork:
     def rollback(self) -> None:
         if self.session is not None:
             self.session.rollback()
+
+    def flush(self) -> None:
+        if self.session is None:
+            raise RuntimeError("Unidade de trabalho não está aberta")
+        self.session.flush()
 

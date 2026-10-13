@@ -9,7 +9,7 @@ PAGE_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("Equipamentos", "Cadastro e pesquisa de equipamentos."),
     ("Ordens de serviço", "Abertura, orçamento e acompanhamento de status."),
     ("Estoque", "Cadastro de peças, saldos e movimentações."),
-    ("Vendas", "Vendas e recebimentos serão implementados em etapa futura."),
+    ("Vendas", "Vendas, recebimentos e caixa."),
     ("Configurações", "Configurações da assistência serão implementadas em etapa futura."),
 )
 
