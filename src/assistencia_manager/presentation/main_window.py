@@ -15,9 +15,7 @@ from assistencia_manager.presentation.pages.work_orders import WorkOrdersPage
 from assistencia_manager.presentation.pages.inventory import InventoryPage
 from assistencia_manager.presentation.pages.sales import SalesPage
 from assistencia_manager.presentation.pages.dashboard import DashboardPage
-from assistencia_manager.presentation.pages.settings import CompanySettingsPage
-from assistencia_manager.presentation.pages.finance import FinancePage
-from assistencia_manager.presentation.pages.fiscal import FiscalPage
+from assistencia_manager.presentation.pages.e23_pages import CompanySettingsPage, FinancePage, FiscalPage
 from assistencia_manager.presentation.pages.reports import ReportsPage
 from assistencia_manager.presentation.pages.access import AccessPage
 from assistencia_manager.presentation.shell import APP_STYLE

@@ -73,6 +73,16 @@ class FinanceService:
             open_receivables = sum((item.remaining_amount for item in entries if item.entry_type is FinancialEntryType.RECEIVABLE and item.status in {FinancialEntryStatus.OPEN, FinancialEntryStatus.PARTIAL}), Decimal("0.00"))
             return CashFlowSummary(start, end, inflow, outflow, inflow - outflow, open_payables, open_receivables)
 
+    def list_entries(self, *, start: date | None = None, end: date | None = None,
+                     entry_type: FinancialEntryType | None = None) -> tuple[FinancialEntry, ...]:
+        """Consulta lançamentos para a apresentação sem expor a unidade de trabalho."""
+        with self._unit_of_work_factory() as uow:
+            entries = tuple(uow.financial_entries.list())
+        if start is not None: entries = tuple(item for item in entries if item.due_date >= start)
+        if end is not None: entries = tuple(item for item in entries if item.due_date <= end)
+        if entry_type is not None: entries = tuple(item for item in entries if item.entry_type is entry_type)
+        return entries
+
     def close_period(self, start: date, end: date) -> CashFlowSummary:
         """Returns the immutable financial closing snapshot for a period."""
         return self.cash_flow(start, end)
