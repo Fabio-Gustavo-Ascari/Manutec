@@ -8,6 +8,8 @@ from assistencia_manager.infrastructure.database.repositories import (
     SqlAlchemyClientRepository,
     SqlAlchemyEquipmentRepository,
     SqlAlchemyWorkOrderRepository,
+    SqlAlchemyInventoryMovementRepository, SqlAlchemyPartRepository,
+    SqlAlchemyPartReservationRepository,
 )
 
 
@@ -20,12 +22,18 @@ class SqlAlchemyUnitOfWork:
         self.clients: SqlAlchemyClientRepository | None = None
         self.equipment: SqlAlchemyEquipmentRepository | None = None
         self.work_orders: SqlAlchemyWorkOrderRepository | None = None
+        self.parts: SqlAlchemyPartRepository | None = None
+        self.inventory_movements: SqlAlchemyInventoryMovementRepository | None = None
+        self.reservations: SqlAlchemyPartReservationRepository | None = None
 
     def __enter__(self) -> SqlAlchemyUnitOfWork:
         self.session = self._session_factory()
         self.clients = SqlAlchemyClientRepository(self.session)
         self.equipment = SqlAlchemyEquipmentRepository(self.session)
         self.work_orders = SqlAlchemyWorkOrderRepository(self.session)
+        self.parts = SqlAlchemyPartRepository(self.session)
+        self.inventory_movements = SqlAlchemyInventoryMovementRepository(self.session)
+        self.reservations = SqlAlchemyPartReservationRepository(self.session)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
@@ -41,6 +49,9 @@ class SqlAlchemyUnitOfWork:
                 self.clients = None
                 self.equipment = None
                 self.work_orders = None
+                self.parts = None
+                self.inventory_movements = None
+                self.reservations = None
 
     def commit(self) -> None:
         if self.session is None:

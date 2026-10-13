@@ -30,6 +30,7 @@ class WorkOrderItem:
     quantity: Decimal
     unit_price: Decimal
     kind: str = "service"
+    part_id: EntityId | None = None
 
     @property
     def amount(self) -> Decimal:
@@ -147,12 +148,16 @@ class WorkOrder(Entity):
         self.status = target
         self._record("status_changed", f"Status alterado de {previous.value} para {target.value}")
 
-    def add_item(self, *, description: str, quantity: Decimal | int | str, unit_price: Decimal | int | str, kind: str = "service") -> None:
+    def add_item(self, *, description: str, quantity: Decimal | int | str, unit_price: Decimal | int | str, kind: str = "service", part_id: EntityId | None = None) -> None:
         self._ensure_editable()
         kind = _text(kind, "Tipo do item")
         if kind not in {"service", "part"}:
             raise DomainValidationError("Tipo do item deve ser service ou part")
+        if part_id is not None and not isinstance(part_id, EntityId):
+            raise DomainValidationError("Peça do item deve ser válida")
         item = WorkOrderItem(_text(description, "Descrição"), _quantity(quantity), _money(unit_price, "Valor unitário"), kind)
+        if part_id is not None:
+            item = WorkOrderItem(item.description, item.quantity, item.unit_price, item.kind, part_id)
         self.items.append(item)
         self._record("item_added", f"Item adicionado: {item.description}")
 

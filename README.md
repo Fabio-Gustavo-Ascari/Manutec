@@ -30,6 +30,7 @@ Organizar o trabalho diário de assistências técnicas, reunindo clientes, equi
 - [x] Busca e paginação integradas à interface desktop.
 - [x] Ordens de serviço com ciclo de vida, orçamento, histórico, persistência e PDF.
 - [x] Tela de ordens de serviço com abertura, filtros e transições críticas.
+- [x] Catálogo de peças, ledger de movimentos, saldos, estoque mínimo e reservas/consumo por ordem de serviço.
 
 ## Tecnologias
 

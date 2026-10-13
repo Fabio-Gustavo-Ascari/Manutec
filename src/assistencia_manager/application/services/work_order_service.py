@@ -9,8 +9,9 @@ from assistencia_manager.application.dto.work_order import (
     WorkOrderSearchQuery,
     WorkOrderStatusCommand,
 )
-from assistencia_manager.domain.entities.work_order import WorkOrder
-from assistencia_manager.domain.exceptions import EntityNotFoundError
+from assistencia_manager.domain.entities.work_order import WorkOrder, WorkOrderStatus
+from assistencia_manager.domain.entities.inventory import InventoryMovementType, PartReservation, StockLedger
+from assistencia_manager.domain.exceptions import DomainValidationError, EntityNotFoundError
 from assistencia_manager.domain.unit_of_work import UnitOfWork
 
 
@@ -42,6 +43,7 @@ class WorkOrderService:
                 quantity=command.quantity,
                 unit_price=command.unit_price,
                 kind=command.kind,
+                part_id=command.part_id,
             )
             uow.work_orders.add(order)
             return order
@@ -49,6 +51,12 @@ class WorkOrderService:
     def transition(self, command: WorkOrderStatusCommand) -> WorkOrder:
         with self._unit_of_work_factory() as uow:
             order = self._get(uow, command.identifier)
+            if command.status is WorkOrderStatus.APPROVED:
+                self._reserve_parts(uow, order)
+            elif command.status is WorkOrderStatus.IN_PROGRESS:
+                self._consume_parts(uow, order)
+            elif command.status in {WorkOrderStatus.REJECTED, WorkOrderStatus.CANCELLED}:
+                self._release_parts(uow, order)
             order.transition_to(command.status)
             uow.work_orders.add(order)
             return order
@@ -78,3 +86,44 @@ class WorkOrderService:
         if order is None:
             raise EntityNotFoundError(f"Ordem {identifier} não encontrada")
         return order
+
+    @staticmethod
+    def _reserve_parts(uow: UnitOfWork, order: WorkOrder) -> None:
+        for item in order.items:
+            if item.kind != "part":
+                continue
+            if item.part_id is None:
+                raise DomainValidationError("Item de peça precisa estar vinculado ao catálogo")
+            part = uow.parts.get(item.part_id)
+            if part is None:
+                raise EntityNotFoundError(f"Peça {item.part_id} não encontrada")
+            part.ensure_active()
+            ledger = StockLedger(tuple(uow.inventory_movements.list_for_part(part.id)))
+            active = tuple(uow.reservations.list_for_part(part.id, active_only=True))
+            reservation = PartReservation.reserve(part_id=part.id, work_order_id=order.id, quantity=item.quantity)
+            if ledger.available_balance(part.id, active + (reservation,)) < 0:
+                raise DomainValidationError(f"Estoque insuficiente para a peça {part.name}")
+            uow.reservations.add(reservation)
+
+    @staticmethod
+    def _consume_parts(uow: UnitOfWork, order: WorkOrder) -> None:
+        reservations = tuple(uow.reservations.list_for_work_order(order.id, active_only=True))
+        ledgers = {}
+        for reservation in reservations:
+            ledger = ledgers.setdefault(
+                reservation.part_id,
+                StockLedger(tuple(uow.inventory_movements.list_for_part(reservation.part_id))),
+            )
+            movement = ledger.record(
+                part_id=reservation.part_id, movement_type=InventoryMovementType.CONSUMPTION,
+                quantity=reservation.quantity, reference_id=order.id,
+            )
+            uow.inventory_movements.add(movement)
+            reservation.consume()
+            uow.reservations.add(reservation)
+
+    @staticmethod
+    def _release_parts(uow: UnitOfWork, order: WorkOrder) -> None:
+        for reservation in uow.reservations.list_for_work_order(order.id, active_only=True):
+            reservation.release()
+            uow.reservations.add(reservation)

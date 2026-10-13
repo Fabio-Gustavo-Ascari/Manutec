@@ -23,7 +23,7 @@ class SqlAlchemyWorkOrderRepository:
             equipment_id=str(entity.equipment_id), reported_issue=entity.reported_issue,
             intake_checklist=list(entity.intake_checklist), diagnosis=entity.diagnosis,
             notes=entity.notes,
-            items=[{"description": i.description, "quantity": str(i.quantity), "unit_price": str(i.unit_price), "kind": i.kind} for i in entity.items],
+            items=[{"description": i.description, "quantity": str(i.quantity), "unit_price": str(i.unit_price), "kind": i.kind, "part_id": str(i.part_id) if i.part_id else None} for i in entity.items],
             discount=entity.discount,
             history=[{"event": h.event, "description": h.description, "created_at": h.created_at.isoformat()} for h in entity.history],
         ))
@@ -64,7 +64,7 @@ class SqlAlchemyWorkOrderRepository:
             client_id=EntityId.from_str(model.client_id), equipment_id=EntityId.from_str(model.equipment_id),
             reported_issue=model.reported_issue, intake_checklist=tuple(model.intake_checklist or ()),
             diagnosis=model.diagnosis, notes=model.notes,
-            items=[WorkOrderItem(i["description"], Decimal(i["quantity"]), Decimal(i["unit_price"]), i["kind"]) for i in model.items or ()],
+            items=[WorkOrderItem(i["description"], Decimal(i["quantity"]), Decimal(i["unit_price"]), i["kind"], EntityId.from_str(i["part_id"]) if i.get("part_id") else None) for i in model.items or ()],
             discount=Decimal(str(model.discount)),
             history_entries=[WorkOrderHistoryEntry(h["event"], h["description"], datetime.fromisoformat(h["created_at"])) for h in model.history or ()],
         )

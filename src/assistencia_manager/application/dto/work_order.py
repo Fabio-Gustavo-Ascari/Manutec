@@ -24,6 +24,7 @@ class AddWorkOrderItemCommand:
     quantity: Decimal
     unit_price: Decimal
     kind: str = "service"
+    part_id: EntityId | None = None
 
 
 @dataclass(frozen=True, slots=True)

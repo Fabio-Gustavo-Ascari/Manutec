@@ -6,6 +6,7 @@ from assistencia_manager.presentation.main_window import MainWindow
 from assistencia_manager.presentation.pages.clients import ClientsPage
 from assistencia_manager.presentation.pages.equipment import EquipmentPage
 from assistencia_manager.presentation.pages.work_orders import WorkOrdersPage
+from assistencia_manager.presentation.pages.inventory import InventoryPage
 from assistencia_manager.application.dto.client import ClientSearchQuery
 from assistencia_manager.application.dto.equipment import EquipmentSearchQuery
 from assistencia_manager.domain.entities.client import Client
@@ -22,6 +23,7 @@ def test_main_window_contains_client_and_equipment_pages():
     assert isinstance(window.stack.widget(1), ClientsPage)
     assert isinstance(window.stack.widget(2), EquipmentPage)
     assert isinstance(window.stack.widget(3), WorkOrdersPage)
+    assert isinstance(window.stack.widget(4), InventoryPage)
     assert window.sidebar.navigation.count() == window.stack.count()
 
     window.close()

@@ -6,11 +6,13 @@ from PySide6.QtWidgets import QHBoxLayout, QLabel, QMainWindow, QStackedWidget, 
 from assistencia_manager.application.services.client_service import ClientService
 from assistencia_manager.application.services.equipment_service import EquipmentService
 from assistencia_manager.application.services.work_order_service import WorkOrderService
+from assistencia_manager.application.services.inventory_service import InventoryService
 from assistencia_manager.presentation.navigation.sidebar import Sidebar
 from assistencia_manager.presentation.pages import PAGE_DEFINITIONS, PlaceholderPage
 from assistencia_manager.presentation.pages.clients import ClientsPage
 from assistencia_manager.presentation.pages.equipment import EquipmentPage
 from assistencia_manager.presentation.pages.work_orders import WorkOrdersPage
+from assistencia_manager.presentation.pages.inventory import InventoryPage
 
 
 class MainWindow(QMainWindow):
@@ -19,6 +21,7 @@ class MainWindow(QMainWindow):
         client_service: ClientService | None = None,
         equipment_service: EquipmentService | None = None,
         work_order_service: WorkOrderService | None = None,
+        inventory_service: InventoryService | None = None,
     ) -> None:
         super().__init__()
         self.setWindowTitle("Manutec")
@@ -34,6 +37,8 @@ class MainWindow(QMainWindow):
                 page = EquipmentPage(equipment_service)
             elif title == "Ordens de serviço":
                 page = WorkOrdersPage(work_order_service)
+            elif title == "Estoque":
+                page = InventoryPage(inventory_service)
             else:
                 page = PlaceholderPage(title, description)
             self.stack.addWidget(page)
