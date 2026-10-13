@@ -9,11 +9,12 @@ from assistencia_manager.infrastructure.database.models.sales import CashRegiste
 from assistencia_manager.infrastructure.database.models.catalog import CatalogEntryModel, ServiceModel, ServicePackageModel, WarrantyRuleModel
 from assistencia_manager.infrastructure.database.models.procurement import PurchaseOrderModel, PurchaseOrderLineModel
 from assistencia_manager.infrastructure.database.models.finance import FinancialEntryModel, RecurringExpenseModel, CommissionModel
+from assistencia_manager.infrastructure.database.models.access import UserModel, AuditLogModel
 
 __all__ = [
     "AppMetadata", "ClientModel", "EquipmentModel", "WorkOrderModel",
     "PartModel", "InventoryMovementModel", "PartReservationModel",
     "SaleModel", "PaymentModel", "CashRegisterModel",
     "CatalogEntryModel", "ServiceModel", "ServicePackageModel", "WarrantyRuleModel", "PurchaseOrderModel", "PurchaseOrderLineModel",
-    "FinancialEntryModel", "RecurringExpenseModel", "CommissionModel",
+    "FinancialEntryModel", "RecurringExpenseModel", "CommissionModel", "UserModel", "AuditLogModel",
 ]

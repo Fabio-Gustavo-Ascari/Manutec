@@ -29,6 +29,8 @@ class UnitOfWork(Protocol):
     financial_entries: object
     recurring_expenses: object
     commissions: object
+    users: object
+    audit_logs: object
 
     def __enter__(self) -> Self: ...
 

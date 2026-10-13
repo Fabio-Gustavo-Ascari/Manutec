@@ -20,6 +20,8 @@ from assistencia_manager.application.services.catalog_service import CatalogServ
 from assistencia_manager.application.services.procurement_service import ProcurementService
 from assistencia_manager.application.services.finance_service import FinanceService
 from assistencia_manager.application.services.fiscal_service import FiscalService
+from assistencia_manager.application.services.access_service import AccessService
+from assistencia_manager.application.services.audit_service import AuditService
 from assistencia_manager.infrastructure.fiscal_adapters import fiscal_provider_factory
 from assistencia_manager.presentation.main_window import MainWindow
 
@@ -31,6 +33,8 @@ def run(argv: list[str] | None = None) -> int:
     engine = initialize_database()
     unit_of_work_factory = lambda: SqlAlchemyUnitOfWork(engine)
     metadata_factory = lambda: SqlAlchemyAppMetadataRepository(create_session_factory(engine)())
+    audit_service = AuditService(unit_of_work_factory)
+    access_service = AccessService(unit_of_work_factory, audit_service)
     window = MainWindow(
         ClientService(unit_of_work_factory),
         EquipmentService(unit_of_work_factory),
@@ -44,6 +48,8 @@ def run(argv: list[str] | None = None) -> int:
         ProcurementService(unit_of_work_factory),
         FinanceService(unit_of_work_factory),
         FiscalService(metadata_factory, fiscal_provider_factory),
+        access_service,
+        audit_service,
     )
     window.show()
     return application.exec()

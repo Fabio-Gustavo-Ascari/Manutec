@@ -15,6 +15,8 @@ PAGE_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("Vendas", "Vendas, recebimentos e caixa."),
     ("Cadastros", "Categorias, marcas, fornecedores, técnicos, serviços e garantias."),
     ("Configurações", "Configurações da assistência serão implementadas em etapa futura."),
+    ("Relatórios", "Relatórios operacionais e gerenciais exportáveis."),
+    ("Usuários e auditoria", "Usuários locais, permissões e histórico de alterações."),
 )
 
 

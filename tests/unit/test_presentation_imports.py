@@ -24,4 +24,6 @@ def test_page_definitions_are_stable():
         "Vendas",
         "Configurações",
         "Cadastros",
+            "Relatórios",
+            "Usuários e auditoria",
     }

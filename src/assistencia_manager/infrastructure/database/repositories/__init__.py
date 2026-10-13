@@ -20,6 +20,7 @@ from assistencia_manager.infrastructure.database.repositories.app_metadata impor
 from assistencia_manager.infrastructure.database.repositories.catalog import SqlAlchemyCatalogRepository, SqlAlchemyServiceRepository, SqlAlchemyServicePackageRepository, SqlAlchemyWarrantyRuleRepository
 from assistencia_manager.infrastructure.database.repositories.procurement import SqlAlchemyPurchaseOrderRepository
 from assistencia_manager.infrastructure.database.repositories.finance import SqlAlchemyFinancialEntryRepository, SqlAlchemyRecurringExpenseRepository, SqlAlchemyCommissionRepository
+from assistencia_manager.infrastructure.database.repositories.access import SqlAlchemyUserRepository, SqlAlchemyAuditRepository
 
 __all__ = [
     "SqlAlchemyClientRepository", "SqlAlchemyEquipmentRepository", "SqlAlchemyWorkOrderRepository",
@@ -28,5 +29,5 @@ __all__ = [
     "SqlAlchemySaleRepository", "SqlAlchemyPaymentRepository", "SqlAlchemyCashRegisterRepository",
     "SqlAlchemyAppMetadataRepository",
     "SqlAlchemyCatalogRepository", "SqlAlchemyServiceRepository", "SqlAlchemyServicePackageRepository", "SqlAlchemyWarrantyRuleRepository",
-    "SqlAlchemyPurchaseOrderRepository", "SqlAlchemyFinancialEntryRepository", "SqlAlchemyRecurringExpenseRepository", "SqlAlchemyCommissionRepository",
+    "SqlAlchemyPurchaseOrderRepository", "SqlAlchemyFinancialEntryRepository", "SqlAlchemyRecurringExpenseRepository", "SqlAlchemyCommissionRepository", "SqlAlchemyUserRepository", "SqlAlchemyAuditRepository",
 ]
