@@ -6,5 +6,8 @@ from assistencia_manager.infrastructure.database.repositories.client import (
 from assistencia_manager.infrastructure.database.repositories.equipment import (
     SqlAlchemyEquipmentRepository,
 )
+from assistencia_manager.infrastructure.database.repositories.work_order import (
+    SqlAlchemyWorkOrderRepository,
+)
 
-__all__ = ["SqlAlchemyClientRepository", "SqlAlchemyEquipmentRepository"]
+__all__ = ["SqlAlchemyClientRepository", "SqlAlchemyEquipmentRepository", "SqlAlchemyWorkOrderRepository"]

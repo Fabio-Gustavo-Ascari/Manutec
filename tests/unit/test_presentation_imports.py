@@ -15,6 +15,7 @@ def test_page_definitions_are_stable():
     assert {title for title, _ in PAGE_DEFINITIONS} == {
         "Dashboard",
         "Clientes",
+        "Equipamentos",
         "Ordens de serviço",
         "Estoque",
         "Vendas",

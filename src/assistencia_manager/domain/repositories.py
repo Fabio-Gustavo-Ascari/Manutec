@@ -5,6 +5,7 @@ from typing import Protocol, TypeVar
 
 from assistencia_manager.domain.entities.client import Client
 from assistencia_manager.domain.entities.equipment import Equipment
+from assistencia_manager.domain.entities.work_order import WorkOrder
 from assistencia_manager.domain.identifiers import EntityId
 
 EntityT = TypeVar("EntityT")
@@ -46,4 +47,12 @@ class EquipmentRepository(Repository[Equipment], Protocol):
     ) -> Sequence[Equipment]: ...
 
     def count(self, term: str | None, client_id: EntityId | None) -> int: ...
+
+
+class WorkOrderRepository(Repository[WorkOrder], Protocol):
+    def search(
+        self, term: str | None, status: str | None, offset: int, limit: int
+    ) -> Sequence[WorkOrder]: ...
+
+    def count(self, term: str | None, status: str | None) -> int: ...
 

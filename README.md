@@ -25,8 +25,11 @@ Organizar o trabalho diário de assistências técnicas, reunindo clientes, equi
   e equipamentos.
 - [x] Persistência SQLAlchemy e migrações Alembic para clientes e equipamentos.
 - [x] Busca textual e paginação na camada Application e nos repositórios.
-- [ ] Telas de cadastro, edição, consulta e validação de apresentação.
-- [ ] Busca e paginação integradas à interface desktop.
+- [x] Telas de cadastro, edição e validação de apresentação para clientes e equipamentos.
+- [x] Busca e paginação disponíveis na camada de Application e persistência.
+- [x] Busca e paginação integradas à interface desktop.
+- [x] Ordens de serviço com ciclo de vida, orçamento, histórico, persistência e PDF.
+- [x] Tela de ordens de serviço com abertura, filtros e transições críticas.
 
 ## Tecnologias
 

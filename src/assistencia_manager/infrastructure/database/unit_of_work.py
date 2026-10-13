@@ -7,6 +7,7 @@ from assistencia_manager.infrastructure.database.session import create_session_f
 from assistencia_manager.infrastructure.database.repositories import (
     SqlAlchemyClientRepository,
     SqlAlchemyEquipmentRepository,
+    SqlAlchemyWorkOrderRepository,
 )
 
 
@@ -18,11 +19,13 @@ class SqlAlchemyUnitOfWork:
         self.session: Session | None = None
         self.clients: SqlAlchemyClientRepository | None = None
         self.equipment: SqlAlchemyEquipmentRepository | None = None
+        self.work_orders: SqlAlchemyWorkOrderRepository | None = None
 
     def __enter__(self) -> SqlAlchemyUnitOfWork:
         self.session = self._session_factory()
         self.clients = SqlAlchemyClientRepository(self.session)
         self.equipment = SqlAlchemyEquipmentRepository(self.session)
+        self.work_orders = SqlAlchemyWorkOrderRepository(self.session)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
@@ -37,6 +40,7 @@ class SqlAlchemyUnitOfWork:
                 self.session = None
                 self.clients = None
                 self.equipment = None
+                self.work_orders = None
 
     def commit(self) -> None:
         if self.session is None:

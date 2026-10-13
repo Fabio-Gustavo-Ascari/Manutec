@@ -5,8 +5,9 @@ from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 PAGE_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("Dashboard", "Indicadores gerenciais aparecerão aqui."),
-    ("Clientes", "Cadastro e pesquisa de clientes serão implementados em etapa futura."),
-    ("Ordens de serviço", "Fluxo de atendimento será implementado em etapa futura."),
+    ("Clientes", "Cadastro e pesquisa de clientes."),
+    ("Equipamentos", "Cadastro e pesquisa de equipamentos."),
+    ("Ordens de serviço", "Abertura, orçamento e acompanhamento de status."),
     ("Estoque", "Produtos e movimentações serão implementados em etapa futura."),
     ("Vendas", "Vendas e recebimentos serão implementados em etapa futura."),
     ("Configurações", "Configurações da assistência serão implementadas em etapa futura."),

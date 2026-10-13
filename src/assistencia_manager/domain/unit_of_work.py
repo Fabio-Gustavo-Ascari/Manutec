@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol, Self
 
-from assistencia_manager.domain.repositories import ClientRepository, EquipmentRepository
+from assistencia_manager.domain.repositories import ClientRepository, EquipmentRepository, WorkOrderRepository
 
 
 class UnitOfWork(Protocol):
@@ -10,6 +10,7 @@ class UnitOfWork(Protocol):
 
     clients: ClientRepository
     equipment: EquipmentRepository
+    work_orders: WorkOrderRepository
 
     def __enter__(self) -> Self: ...
 
