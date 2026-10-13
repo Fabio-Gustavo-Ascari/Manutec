@@ -4,6 +4,10 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from assistencia_manager.infrastructure.database.session import create_session_factory
+from assistencia_manager.infrastructure.database.repositories import (
+    SqlAlchemyClientRepository,
+    SqlAlchemyEquipmentRepository,
+)
 
 
 class SqlAlchemyUnitOfWork:
@@ -12,9 +16,13 @@ class SqlAlchemyUnitOfWork:
     def __init__(self, engine: Engine) -> None:
         self._session_factory = create_session_factory(engine)
         self.session: Session | None = None
+        self.clients: SqlAlchemyClientRepository | None = None
+        self.equipment: SqlAlchemyEquipmentRepository | None = None
 
     def __enter__(self) -> SqlAlchemyUnitOfWork:
         self.session = self._session_factory()
+        self.clients = SqlAlchemyClientRepository(self.session)
+        self.equipment = SqlAlchemyEquipmentRepository(self.session)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
@@ -27,6 +35,8 @@ class SqlAlchemyUnitOfWork:
             if self.session is not None:
                 self.session.close()
                 self.session = None
+                self.clients = None
+                self.equipment = None
 
     def commit(self) -> None:
         if self.session is None:
