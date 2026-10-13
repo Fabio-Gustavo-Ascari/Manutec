@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from assistencia_manager.domain.entities.base import EntityStatus
@@ -50,6 +50,29 @@ class SqlAlchemyClientRepository:
 
     def exists_by_name(self, name: str) -> bool:
         return self._session.scalar(select(ClientModel.id).where(ClientModel.name == name).limit(1)) is not None
+
+    def search(self, term: str | None, offset: int, limit: int) -> tuple[Client, ...]:
+        statement = select(ClientModel)
+        if term and term.strip():
+            pattern = f"%{term.strip()}%"
+            statement = statement.where(
+                ClientModel.name.ilike(pattern)
+                | ClientModel.document.ilike(pattern)
+                | ClientModel.address.ilike(pattern)
+            )
+        statement = statement.order_by(ClientModel.name).offset(offset).limit(limit)
+        return tuple(self._to_entity(model) for model in self._session.scalars(statement))
+
+    def count(self, term: str | None) -> int:
+        statement = select(ClientModel.id)
+        if term and term.strip():
+            pattern = f"%{term.strip()}%"
+            statement = statement.where(
+                ClientModel.name.ilike(pattern)
+                | ClientModel.document.ilike(pattern)
+                | ClientModel.address.ilike(pattern)
+            )
+        return self._session.scalar(select(func.count()).select_from(statement.subquery())) or 0
 
     @staticmethod
     def _to_entity(model: ClientModel) -> Client:

@@ -27,9 +27,23 @@ class ClientRepository(Repository[Client], Protocol):
 
     def exists_by_name(self, name: str) -> bool: ...
 
+    def search(self, term: str | None, offset: int, limit: int) -> Sequence[Client]: ...
+
+    def count(self, term: str | None) -> int: ...
+
 
 class EquipmentRepository(Repository[Equipment], Protocol):
     """Porta de persistência dos equipamentos."""
 
     def exists_by_serial_number(self, serial_number: str) -> bool: ...
+
+    def search(
+        self,
+        term: str | None,
+        client_id: EntityId | None,
+        offset: int,
+        limit: int,
+    ) -> Sequence[Equipment]: ...
+
+    def count(self, term: str | None, client_id: EntityId | None) -> int: ...
 

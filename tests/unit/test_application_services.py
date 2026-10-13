@@ -30,6 +30,18 @@ class InMemoryClientRepository:
     def exists_by_name(self, name: str) -> bool:
         return any(client.name == name for client in self.items.values())
 
+    def search(self, term: str | None, offset: int, limit: int) -> Sequence[Client]:
+        normalized = (term or "").strip().casefold()
+        matches = tuple(
+            client
+            for client in self.items.values()
+            if not normalized or normalized in client.name.casefold()
+        )
+        return matches[offset : offset + limit]
+
+    def count(self, term: str | None) -> int:
+        return len(self.search(term, 0, len(self.items)))
+
 
 class InMemoryEquipmentRepository:
     def __init__(self) -> None:
@@ -49,6 +61,31 @@ class InMemoryEquipmentRepository:
 
     def exists_by_serial_number(self, serial_number: str) -> bool:
         return any(item.serial_number == serial_number for item in self.items.values())
+
+    def search(
+        self,
+        term: str | None,
+        client_id: EntityId | None,
+        offset: int,
+        limit: int,
+    ) -> Sequence[Equipment]:
+        normalized = (term or "").strip().casefold()
+        matches = tuple(
+            equipment
+            for equipment in self.items.values()
+            if (client_id is None or equipment.client_id == client_id)
+            and (
+                not normalized
+                or normalized in equipment.equipment_type.casefold()
+                or normalized in (equipment.brand or "").casefold()
+                or normalized in (equipment.model or "").casefold()
+                or normalized in (equipment.serial_number or "").casefold()
+            )
+        )
+        return matches[offset : offset + limit]
+
+    def count(self, term: str | None, client_id: EntityId | None) -> int:
+        return len(self.search(term, client_id, 0, len(self.items)))
 
 
 class InMemoryUnitOfWork:
@@ -244,3 +281,51 @@ def test_query_and_inactivate_raise_when_entity_does_not_exist(
         EquipmentService(lambda: unit_of_work).get(identifier)
     with pytest.raises(EntityNotFoundError):
         EquipmentService(lambda: unit_of_work).deactivate(identifier)
+
+
+def test_client_search_returns_filtered_page():
+    from assistencia_manager.application.dto.client import CreateClientCommand, ClientSearchQuery
+    from assistencia_manager.application.services.client_service import ClientService
+
+    unit_of_work = InMemoryUnitOfWork()
+    service = ClientService(lambda: unit_of_work)
+    service.create(CreateClientCommand(name="Alpha"))
+    service.create(CreateClientCommand(name="Beta"))
+    service.create(CreateClientCommand(name="Alpine"))
+
+    page = service.search(ClientSearchQuery(search="alp", page=1, page_size=1))
+
+    assert page.items[0].name == "Alpha"
+    assert page.page == 1
+    assert page.page_size == 1
+    assert page.total_items == 2
+    assert page.total_pages == 2
+
+
+def test_equipment_search_filters_by_text_and_client():
+    from assistencia_manager.application.dto.client import CreateClientCommand
+    from assistencia_manager.application.dto.equipment import (
+        CreateEquipmentCommand,
+        EquipmentSearchQuery,
+    )
+    from assistencia_manager.application.services.client_service import ClientService
+    from assistencia_manager.application.services.equipment_service import EquipmentService
+
+    unit_of_work = InMemoryUnitOfWork()
+    client_service = ClientService(lambda: unit_of_work)
+    equipment_service = EquipmentService(lambda: unit_of_work)
+    first_client = client_service.create(CreateClientCommand(name="Primeiro"))
+    second_client = client_service.create(CreateClientCommand(name="Segundo"))
+    equipment_service.create(
+        CreateEquipmentCommand(client_id=first_client.id, equipment_type="Notebook", model="A")
+    )
+    equipment_service.create(
+        CreateEquipmentCommand(client_id=second_client.id, equipment_type="Notebook", model="B")
+    )
+
+    page = equipment_service.search(
+        EquipmentSearchQuery(search="notebook", client_id=first_client.id, page=1, page_size=10)
+    )
+
+    assert [item.model for item in page.items] == ["A"]
+    assert page.total_items == 1

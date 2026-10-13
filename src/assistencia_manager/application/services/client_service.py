@@ -3,7 +3,12 @@ from __future__ import annotations
 from collections.abc import Callable
 from collections.abc import Sequence
 
-from assistencia_manager.application.dto.client import CreateClientCommand, UpdateClientCommand
+from assistencia_manager.application.dto.client import (
+    ClientSearchQuery,
+    CreateClientCommand,
+    UpdateClientCommand,
+)
+from assistencia_manager.application.dto.pagination import Page
 from assistencia_manager.domain.entities.client import Client
 from assistencia_manager.domain.exceptions import EntityNotFoundError
 from assistencia_manager.domain.identifiers import EntityId
@@ -60,3 +65,14 @@ class ClientService:
             client.deactivate()
             unit_of_work.clients.add(client)
             return client
+
+    def search(self, query: ClientSearchQuery) -> Page[Client]:
+        with self._unit_of_work_factory() as unit_of_work:
+            offset = (query.page - 1) * query.page_size
+            items = unit_of_work.clients.search(query.search, offset, query.page_size)
+            return Page(
+                items=tuple(items),
+                page=query.page,
+                page_size=query.page_size,
+                total_items=unit_of_work.clients.count(query.search),
+            )

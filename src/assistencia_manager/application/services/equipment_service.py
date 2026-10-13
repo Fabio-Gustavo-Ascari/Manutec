@@ -5,8 +5,10 @@ from collections.abc import Sequence
 
 from assistencia_manager.application.dto.equipment import (
     CreateEquipmentCommand,
+    EquipmentSearchQuery,
     UpdateEquipmentCommand,
 )
+from assistencia_manager.application.dto.pagination import Page
 from assistencia_manager.domain.entities.equipment import Equipment
 from assistencia_manager.domain.exceptions import EntityNotFoundError
 from assistencia_manager.domain.identifiers import EntityId
@@ -66,3 +68,16 @@ class EquipmentService:
             equipment.deactivate()
             unit_of_work.equipment.add(equipment)
             return equipment
+
+    def search(self, query: EquipmentSearchQuery) -> Page[Equipment]:
+        with self._unit_of_work_factory() as unit_of_work:
+            offset = (query.page - 1) * query.page_size
+            items = unit_of_work.equipment.search(
+                query.search, query.client_id, offset, query.page_size
+            )
+            return Page(
+                items=tuple(items),
+                page=query.page,
+                page_size=query.page_size,
+                total_items=unit_of_work.equipment.count(query.search, query.client_id),
+            )

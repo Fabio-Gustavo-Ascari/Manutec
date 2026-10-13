@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from assistencia_manager.domain.entities.base import EntityStatus
@@ -52,6 +52,41 @@ class SqlAlchemyEquipmentRepository:
             )
             is not None
         )
+
+    def search(
+        self,
+        term: str | None,
+        client_id: EntityId | None,
+        offset: int,
+        limit: int,
+    ) -> tuple[Equipment, ...]:
+        statement = select(EquipmentModel)
+        if client_id is not None:
+            statement = statement.where(EquipmentModel.client_id == str(client_id))
+        if term and term.strip():
+            pattern = f"%{term.strip()}%"
+            statement = statement.where(
+                EquipmentModel.equipment_type.ilike(pattern)
+                | EquipmentModel.brand.ilike(pattern)
+                | EquipmentModel.model.ilike(pattern)
+                | EquipmentModel.serial_number.ilike(pattern)
+            )
+        statement = statement.order_by(EquipmentModel.equipment_type).offset(offset).limit(limit)
+        return tuple(self._to_entity(model) for model in self._session.scalars(statement))
+
+    def count(self, term: str | None, client_id: EntityId | None) -> int:
+        statement = select(EquipmentModel.id)
+        if client_id is not None:
+            statement = statement.where(EquipmentModel.client_id == str(client_id))
+        if term and term.strip():
+            pattern = f"%{term.strip()}%"
+            statement = statement.where(
+                EquipmentModel.equipment_type.ilike(pattern)
+                | EquipmentModel.brand.ilike(pattern)
+                | EquipmentModel.model.ilike(pattern)
+                | EquipmentModel.serial_number.ilike(pattern)
+            )
+        return self._session.scalar(select(func.count()).select_from(statement.subquery())) or 0
 
     @staticmethod
     def _to_entity(model: EquipmentModel) -> Equipment:

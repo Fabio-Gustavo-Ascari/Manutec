@@ -18,6 +18,16 @@ Organizar o trabalho diário de assistências técnicas, reunindo clientes, equi
 - Configurações da loja, backup e restauração.
 - Aplicativo Windows com banco de dados local.
 
+## Status atual
+
+- [x] Fundação do domínio, configuração e banco SQLite.
+- [x] Casos de uso de cadastrar, editar, consultar, listar e inativar clientes
+  e equipamentos.
+- [x] Persistência SQLAlchemy e migrações Alembic para clientes e equipamentos.
+- [x] Busca textual e paginação na camada Application e nos repositórios.
+- [ ] Telas de cadastro, edição, consulta e validação de apresentação.
+- [ ] Busca e paginação integradas à interface desktop.
+
 ## Tecnologias
 
 - Python 3.13.
