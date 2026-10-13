@@ -19,6 +19,7 @@ from assistencia_manager.presentation.pages.settings import CompanySettingsPage
 from assistencia_manager.presentation.pages.catalogs import CatalogsPage
 from assistencia_manager.presentation.pages.purchases import PurchasesPage
 from assistencia_manager.presentation.pages.finance import FinancePage
+from assistencia_manager.presentation.pages.fiscal import FiscalPage
 from assistencia_manager.presentation.shell import APP_STYLE
 
 
@@ -36,6 +37,7 @@ class MainWindow(QMainWindow):
         catalog_service=None,
         procurement_service=None,
         finance_service=None,
+        fiscal_service=None,
     ) -> None:
         super().__init__()
         self.setStyleSheet(APP_STYLE)
@@ -66,6 +68,8 @@ class MainWindow(QMainWindow):
                 page = PurchasesPage(procurement_service)
             elif title == "Financeiro":
                 page = FinancePage(finance_service)
+            elif title == "Fiscal e periféricos":
+                page = FiscalPage(fiscal_service)
             else:
                 page = PlaceholderPage(title, description)
             self.stack.addWidget(page)

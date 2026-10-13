@@ -20,6 +20,7 @@ def test_page_definitions_are_stable():
         "Estoque",
             "Compras",
         "Financeiro",
+        "Fiscal e periféricos",
         "Vendas",
         "Configurações",
         "Cadastros",

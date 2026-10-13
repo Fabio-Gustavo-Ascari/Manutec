@@ -19,6 +19,8 @@ from assistencia_manager.application.services.report_service import ReportServic
 from assistencia_manager.application.services.catalog_service import CatalogService
 from assistencia_manager.application.services.procurement_service import ProcurementService
 from assistencia_manager.application.services.finance_service import FinanceService
+from assistencia_manager.application.services.fiscal_service import FiscalService
+from assistencia_manager.infrastructure.fiscal_adapters import fiscal_provider_factory
 from assistencia_manager.presentation.main_window import MainWindow
 
 
@@ -41,6 +43,7 @@ def run(argv: list[str] | None = None) -> int:
         CatalogService(unit_of_work_factory),
         ProcurementService(unit_of_work_factory),
         FinanceService(unit_of_work_factory),
+        FiscalService(metadata_factory, fiscal_provider_factory),
     )
     window.show()
     return application.exec()

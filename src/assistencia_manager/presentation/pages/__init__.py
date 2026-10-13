@@ -11,6 +11,7 @@ PAGE_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("Estoque", "Cadastro de peças, saldos e movimentações."),
     ("Compras", "Pedidos, recebimentos e reposição de estoque."),
     ("Financeiro", "Contas a pagar, receber e fluxo de caixa."),
+    ("Fiscal e periféricos", "NF-e, NFC-e, NFS-e, impressoras, leitor e PIX."),
     ("Vendas", "Vendas, recebimentos e caixa."),
     ("Cadastros", "Categorias, marcas, fornecedores, técnicos, serviços e garantias."),
     ("Configurações", "Configurações da assistência serão implementadas em etapa futura."),
