@@ -14,7 +14,11 @@ def sanitize_log_message(message: str) -> str:
 
 class SanitizingFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        record.msg = sanitize_log_message(str(record.msg))
+        try:
+            rendered = record.getMessage()
+        except Exception:
+            rendered = str(record.msg)
+        record.msg = sanitize_log_message(rendered)
         record.args = ()
         return True
 
