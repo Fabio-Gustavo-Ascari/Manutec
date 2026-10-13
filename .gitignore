@@ -21,6 +21,7 @@ build/
 # Arquivos locais de desenvolvimento do Codex e do harness
 AGENTS.md
 .harness.yaml
+scripts/
 Docs/
 Agents/
 .codex/
