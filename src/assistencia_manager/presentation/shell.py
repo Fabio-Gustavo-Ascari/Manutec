@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QComboBox, QFrame, QLabel, QVBoxLayout, QWidget
 
 APP_STYLE = """
@@ -16,7 +17,16 @@ QHeaderView::section { background: #eef2f7; padding: 7px; border: 0; font-weight
 
 class SearchableComboBox(QComboBox):
     def __init__(self, parent: QWidget | None = None) -> None:
-        super().__init__(parent); self.setEditable(True); self.setInsertPolicy(QComboBox.InsertPolicy.NoInsert); self.setPlaceholderText("Digite para buscar..."); self.setMaxVisibleItems(10); self.setCurrentIndex(-1)
+        super().__init__(parent)
+        self.setEditable(True)
+        self.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self.setPlaceholderText("Digite para buscar...")
+        self.setMaxVisibleItems(10)
+        completer = self.completer()
+        completer.setCompletionMode(completer.CompletionMode.PopupCompletion)
+        completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        self.setCurrentIndex(-1)
 
 class PageShell(QFrame):
     def __init__(self, title: str, subtitle: str = "", parent: QWidget | None = None) -> None:

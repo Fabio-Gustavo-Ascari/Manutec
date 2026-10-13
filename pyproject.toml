@@ -28,9 +28,9 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra --basetemp=..\\dev-harness\\var\\pytest\\basetemp"
+addopts = "-ra --basetemp=.pytest-tmp"
 pythonpath = ["src"]
-cache_dir = "..\\dev-harness\\var\\pytest\\cache"
+cache_dir = ".pytest-cache"
 
 [tool.ruff]
 line-length = 100

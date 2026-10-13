@@ -2,11 +2,22 @@ import os
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QComboBox, QTableWidget
 
 from assistencia_manager.presentation.pages.inventory import InventoryPage
 from assistencia_manager.presentation.pages.sales import SalesPage
 from assistencia_manager.presentation.pages.work_orders import WorkOrdersPage
+from assistencia_manager.presentation.shell import SearchableComboBox
+
+
+def test_searchable_combo_matches_any_text_case_insensitively():
+    app = QApplication.instance() or QApplication([])
+    combo = SearchableComboBox()
+
+    assert combo.completer().completionMode() == combo.completer().CompletionMode.PopupCompletion
+    assert combo.completer().filterMode() == Qt.MatchFlag.MatchContains
+    assert combo.completer().caseSensitivity() == Qt.CaseSensitivity.CaseInsensitive
 
 
 def test_work_order_redesign_uses_searchable_selections_and_detail_table():
