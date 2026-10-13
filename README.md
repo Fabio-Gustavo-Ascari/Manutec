@@ -32,6 +32,8 @@ Organizar o trabalho diário de assistências técnicas, reunindo clientes, equi
 - [x] Tela de ordens de serviço com abertura, filtros e transições críticas.
 - [x] Catálogo de peças, ledger de movimentos, saldos, estoque mínimo e reservas/consumo por ordem de serviço.
 - [x] Cadastros completos de peças, categorias, marcas, fornecedores, técnicos, serviços, pacotes e garantias.
+- [x] Interface homologada nas 13 telas, com navegação acessível, rolagem
+  responsiva e fluxo integrado de cliente até financeiro e relatórios.
 
 ## Tecnologias
 

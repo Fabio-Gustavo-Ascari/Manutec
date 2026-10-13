@@ -77,11 +77,40 @@ class ReleaseGate:
         checks.append(ReleaseCheck("support-package-privacy", support_ok, "sem banco ou logs brutos"))
 
         main_window = self._read_text("src/assistencia_manager/presentation/main_window.py")
-        required_pages = ("Relatórios", "Usuários e auditoria")
+        required_pages = (
+            "Dashboard",
+            "Clientes",
+            "Equipamentos",
+            "Ordens de serviço",
+            "Estoque",
+            "Compras",
+            "Financeiro",
+            "Fiscal e periféricos",
+            "Vendas",
+            "Cadastros",
+            "Configurações",
+            "Relatórios",
+            "Usuários e auditoria",
+        )
         navigation = ", ".join(page for page in required_pages if page in main_window)
         navigation_ok = navigation == ", ".join(required_pages)
         details["navigation-integration"] = navigation
+        details["complete-navigation"] = navigation
         checks.append(ReleaseCheck("navigation-integration", navigation_ok, navigation))
+        checks.append(ReleaseCheck("complete-navigation", navigation_ok, navigation))
+
+        responsive_tokens = (
+            "QScrollArea",
+            "setWidgetResizable(True)",
+            "ScrollBarAsNeeded",
+            "setWidget(self.stack)",
+        )
+        responsive_ok = all(token in main_window for token in responsive_tokens)
+        responsive_detail = "rolagem horizontal e vertical sob demanda"
+        details["responsive-shell"] = responsive_detail if responsive_ok else "contrato ausente"
+        checks.append(
+            ReleaseCheck("responsive-shell", responsive_ok, details["responsive-shell"])
+        )
 
         return ReleaseReport(version, tuple(checks), details)
 
