@@ -15,11 +15,14 @@ def test_sidebar_groups_pages_by_operational_context():
 
     sidebar = Sidebar(PAGE_DEFINITIONS)
 
-    assert sidebar.section_labels == ["Operação", "Cadastros", "Financeiro", "Administração"]
+    assert sidebar.section_labels == ["Operação", "Base e compras", "Financeiro e fiscal", "Administração"]
+    assert all(label not in sidebar.page_titles for label in sidebar.section_labels)
     assert sidebar.navigation.item(0).text() == "Operação"
     assert not sidebar.navigation.item(0).flags() & Qt.ItemFlag.ItemIsSelectable
     assert "Dashboard" in sidebar.page_titles
     assert "Relatórios" in sidebar.page_titles
+    for title in sidebar.page_titles:
+        assert not sidebar.navigation.item(sidebar._title_to_row[title]).icon().isNull(), title
 
 
 def test_main_window_exposes_global_context_and_search():
@@ -34,6 +37,7 @@ def test_main_window_exposes_global_context_and_search():
     assert window.global_search.placeholderText()
     assert window.help_button is not None
     assert window.settings_button is not None
+    assert window.page_animation.duration() == 180
 
 
 def test_main_window_navigation_updates_active_context_status_and_shortcut():

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Qt
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (
-    QFrame,
+    QFrame, QGraphicsOpacityEffect,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -61,6 +61,7 @@ class MainWindow(QMainWindow):
         for title, description in PAGE_DEFINITIONS:
             if title == "Dashboard":
                 page = DashboardPage(dashboard_service, report_service)
+                page.navigation_requested.connect(self.sidebar.select_page)
             elif title == "Clientes":
                 page = ClientsPage(client_service)
             elif title == "Equipamentos":
@@ -111,6 +112,12 @@ class MainWindow(QMainWindow):
         self.content_scroll.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAsNeeded
         )
+        self.page_opacity = QGraphicsOpacityEffect(self.content_scroll)
+        self.page_opacity.setOpacity(1.0)
+        self.content_scroll.setGraphicsEffect(self.page_opacity)
+        self.page_animation = QPropertyAnimation(self.page_opacity, b"opacity", self)
+        self.page_animation.setDuration(180)
+        self.page_animation.setEasingCurve(QEasingCurve.Type.OutCubic)
         self.content_scroll.setWidget(self.stack)
         content_layout.addWidget(self.content_scroll, 1)
         layout.addWidget(content, 1)
@@ -166,6 +173,10 @@ class MainWindow(QMainWindow):
 
     def _show_page(self, index: int) -> None:
         self.stack.setCurrentIndex(index)
+        self.page_animation.stop()
+        self.page_animation.setStartValue(0.92)
+        self.page_animation.setEndValue(1.0)
+        self.page_animation.start()
         title = next((name for name, page in self.page_by_title.items() if page is self.stack.currentWidget()), "Manutec")
         self.active_page_title.setText(title)
         self.statusBar().showMessage(f"Tela ativa: {title}")

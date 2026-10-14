@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QFileDialog, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from assistencia_manager.application.services.dashboard_service import DashboardService
@@ -11,6 +11,8 @@ from assistencia_manager.presentation.shell import DashboardMetricCard, PageShel
 
 
 class DashboardPage(QWidget):
+    navigation_requested = Signal(str)
+
     def __init__(self, dashboard_service: DashboardService | None = None, report_service: ReportService | None = None) -> None:
         super().__init__()
         self.dashboard_service = dashboard_service
@@ -79,12 +81,15 @@ class DashboardPage(QWidget):
         self.status_summary.setText(", ".join(f"{key}: {value}" for key, value in sorted(snapshot.orders_by_status.items())) or "Nenhuma ordem registrada")
 
     def _quick_order(self) -> None:
+        self.navigation_requested.emit("Ordens de serviço")
         self.statusBarMessage("Abertura de ordem disponível na tela de Ordens de serviço.")
 
     def _quick_sale(self) -> None:
+        self.navigation_requested.emit("Vendas")
         self.statusBarMessage("Registro de venda disponível na tela de Vendas.")
 
     def _quick_stock(self) -> None:
+        self.navigation_requested.emit("Estoque")
         self.statusBarMessage("Reposição disponível na tela de Estoque.")
 
     def statusBarMessage(self, message: str) -> None:

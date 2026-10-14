@@ -25,6 +25,7 @@ def test_visual_foundation_exposes_tokens_and_reusable_page_components():
     )
 
     assert VISUAL_TOKENS["color.primary"]
+    assert VISUAL_TOKENS["color.sidebar"] == "#0b1220"
     assert VISUAL_TOKENS["space.page"]
     assert "#" in APP_STYLE
     shell = PageShell("Título", "Contexto", actions=[QPushButton("Ação")])

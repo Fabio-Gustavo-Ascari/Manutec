@@ -1,22 +1,38 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QListWidget, QListWidgetItem, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QListWidget, QListWidgetItem, QStyle, QVBoxLayout, QWidget
 
 
 class Sidebar(QWidget):
     page_selected = Signal(int)
+
+    _page_icons = {
+        "Dashboard": QStyle.StandardPixmap.SP_ComputerIcon,
+        "Clientes": QStyle.StandardPixmap.SP_DirHomeIcon,
+        "Equipamentos": QStyle.StandardPixmap.SP_DesktopIcon,
+        "Ordens de serviço": QStyle.StandardPixmap.SP_FileDialogDetailedView,
+        "Estoque": QStyle.StandardPixmap.SP_DriveHDIcon,
+        "Compras": QStyle.StandardPixmap.SP_DialogOpenButton,
+        "Financeiro": QStyle.StandardPixmap.SP_DialogApplyButton,
+        "Fiscal e periféricos": QStyle.StandardPixmap.SP_FileIcon,
+        "Vendas": QStyle.StandardPixmap.SP_DialogYesButton,
+        "Cadastros": QStyle.StandardPixmap.SP_FileDialogNewFolder,
+        "Configurações": QStyle.StandardPixmap.SP_FileDialogContentsView,
+        "Relatórios": QStyle.StandardPixmap.SP_FileDialogInfoView,
+        "Usuários e auditoria": QStyle.StandardPixmap.SP_DirIcon,
+    }
 
     def __init__(self, page_definitions: tuple[tuple[str, str], ...]) -> None:
         super().__init__()
         self.setObjectName("sidebar")
         self.setMinimumWidth(196)
         self.setMaximumWidth(240)
-        self.section_labels = ["Operação", "Cadastros", "Financeiro", "Administração"]
+        self.section_labels = ["Operação", "Base e compras", "Financeiro e fiscal", "Administração"]
         groups = {
             "Operação": {"Dashboard", "Ordens de serviço", "Estoque", "Vendas"},
-            "Cadastros": {"Clientes", "Equipamentos", "Cadastros", "Compras"},
-            "Financeiro": {"Financeiro", "Fiscal e periféricos"},
+            "Base e compras": {"Clientes", "Equipamentos", "Cadastros", "Compras"},
+            "Financeiro e fiscal": {"Financeiro", "Fiscal e periféricos"},
             "Administração": {"Configurações", "Relatórios", "Usuários e auditoria"},
         }
         self.navigation = QListWidget()
@@ -33,6 +49,7 @@ class Sidebar(QWidget):
                 if title not in groups[section]:
                     continue
                 item = QListWidgetItem(title)
+                item.setIcon(QApplication.style().standardIcon(self._page_icons[title]))
                 item.setData(Qt.ItemDataRole.UserRole, title)
                 self.navigation.addItem(item)
                 self.page_titles.append(title)

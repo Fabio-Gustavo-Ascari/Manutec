@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
 )
 
 VISUAL_TOKENS = {
-    "color.canvas": "#f4f7fb", "color.surface": "#ffffff", "color.ink": "#172033",
+    "color.canvas": "#f4f7fb", "color.surface": "#ffffff", "color.ink": "#172033", "color.sidebar": "#0b1220",
     "color.muted": "#667085", "color.border": "#e4e9f0", "color.primary": "#2563eb",
     "color.success": "#138a62", "color.warning": "#b7791f", "color.danger": "#c2414b",
     "radius.card": "14px", "radius.control": "8px", "space.page": "28px",
@@ -26,7 +26,7 @@ VISUAL_TOKENS = {
 
 APP_STYLE = """
 QMainWindow, QWidget { background: #f4f7fb; color: #172033; }
-QWidget#sidebar { background: #172033; }
+QWidget#sidebar { background: #0b1220; }
 QListWidget#navigation { background: transparent; border: 0; color: #cbd5e1; outline: 0; }
 QListWidget#navigation::item { padding: 9px 10px; border-radius: 7px; }
 QListWidget#navigation::item:selected { background: #2563eb; color: white; }

@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QApplication, QScrollArea
 from assistencia_manager.infrastructure.release import ReleaseGate
 from assistencia_manager.presentation.main_window import MainWindow
 from assistencia_manager.presentation.pages import PAGE_DEFINITIONS
+from assistencia_manager.presentation.pages.dashboard import DashboardPage
 from assistencia_manager.presentation.shell import PageShell
 
 
@@ -46,3 +47,18 @@ def test_release_gate_covers_the_complete_navigation_and_responsive_shell():
         check.name for check in report.checks
     }
     assert all(title in report.details["complete-navigation"] for title, _ in PAGE_DEFINITIONS)
+
+
+def test_dashboard_quick_actions_request_navigation_to_operational_pages():
+    _app()
+    page = DashboardPage()
+    requested = []
+    page.navigation_requested.connect(requested.append)
+
+    buttons = {button.text(): button for button in page.findChildren(__import__("PySide6.QtWidgets", fromlist=["QPushButton"]).QPushButton)}
+    buttons["Nova ordem de serviço"].click()
+    buttons["Registrar venda"].click()
+    buttons["Repor estoque"].click()
+
+    assert requested == ["Ordens de serviço", "Vendas", "Estoque"]
+    page.close()
