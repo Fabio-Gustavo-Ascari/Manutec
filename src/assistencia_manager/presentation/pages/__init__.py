@@ -14,7 +14,7 @@ PAGE_DEFINITIONS: tuple[tuple[str, str], ...] = (
     ("Fiscal e periféricos", "NF-e, NFC-e, NFS-e, impressoras, leitor e PIX."),
     ("Vendas", "Vendas, recebimentos e caixa."),
     ("Cadastros", "Categorias, marcas, fornecedores, técnicos, serviços e garantias."),
-    ("Configurações", "Configurações da assistência serão implementadas em etapa futura."),
+    ("Configurações", "Dados da assistência, preferências e backup local."),
     ("Relatórios", "Relatórios operacionais e gerenciais exportáveis."),
     ("Usuários e auditoria", "Usuários locais, permissões e histórico de alterações."),
 )

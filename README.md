@@ -42,6 +42,10 @@ Vendas, Clientes e Compras. Os outros módulos ficam na seção Mais módulos.
 No menu lateral, clique nos grupos para expandir ou recolher suas opções.
 O visual usa superfícies brancas, destaques azuis e ícones vetoriais locais.
 
+Para testar diretamente no Windows, abra `dist\Manutec\Manutec.exe` mantendo a
+pasta `_internal` junto do executável. O roteiro completo está em
+`TESTE-DIRETO.md`.
+
 ## Tecnologias
 
 - Python 3.13.

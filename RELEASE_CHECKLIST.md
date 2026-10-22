@@ -1,6 +1,7 @@
 # Checklist de release 0.1.0
 
 - [x] Executar `scripts\build-release.ps1 -Clean`.
+- [x] Gerar pacote portátil testável em `dist\Manutec\Manutec.exe`.
 - [ ] Compilar `installer\manutec.iss` com Inno Setup.
 - [x] Testar inicialização do executável e criação do banco em diretório temporário.
 - [x] Validar atualização/desinstalação e preservação de dados por inspeção do contrato do instalador; teste físico depende do Inno Setup.
