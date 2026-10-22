@@ -25,6 +25,10 @@ a = Analysis(
     excludes=["tkinter"],
     noarchive=False,
 )
+# Qt uses the unversioned ICU API provided by Windows. A build environment
+# containing Poppler can resolve that name to its incompatible, versioned ICU.
+# Leave the Windows API to the OS loader instead of shipping that foreign DLL.
+a.binaries = [entry for entry in a.binaries if entry[0].lower() != "icuuc.dll"]
 pyz = PYZ(a.pure)
 exe = EXE(
     pyz,

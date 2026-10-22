@@ -3,7 +3,7 @@ from __future__ import annotations
 from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Qt
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (
-    QFrame, QGraphicsOpacityEffect,
+    QFrame, QGraphicsOpacityEffect, QLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -31,6 +31,22 @@ from assistencia_manager.presentation.pages.e24_pages import ReportsPage, Access
 from assistencia_manager.presentation.shell import APP_STYLE, apply_accessibility
 
 
+class PageStack(QStackedWidget):
+    """Size the scroll area to the active page, independent of hidden forms."""
+
+    def __init__(self):
+        super().__init__()
+        self.layout().setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
+
+    def minimumSizeHint(self):
+        page = self.currentWidget()
+        return page.minimumSizeHint() if page else super().minimumSizeHint()
+
+    def sizeHint(self):
+        page = self.currentWidget()
+        return page.sizeHint() if page else super().sizeHint()
+
+
 class MainWindow(QMainWindow):
     def __init__(
         self,
@@ -56,7 +72,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(1024, 640)
 
         self.sidebar = Sidebar(PAGE_DEFINITIONS)
-        self.stack = QStackedWidget()
+        self.stack = PageStack()
         self.page_by_title = {}
         for title, description in PAGE_DEFINITIONS:
             if title == "Dashboard":
@@ -173,6 +189,9 @@ class MainWindow(QMainWindow):
 
     def _show_page(self, index: int) -> None:
         self.stack.setCurrentIndex(index)
+        self.stack.updateGeometry()
+        self.content_scroll.verticalScrollBar().setValue(0)
+        self.content_scroll.horizontalScrollBar().setValue(0)
         self.page_animation.stop()
         self.page_animation.setStartValue(0.92)
         self.page_animation.setEndValue(1.0)

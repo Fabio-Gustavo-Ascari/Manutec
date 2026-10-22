@@ -25,7 +25,7 @@ def test_visual_foundation_exposes_tokens_and_reusable_page_components():
     )
 
     assert VISUAL_TOKENS["color.primary"]
-    assert VISUAL_TOKENS["color.sidebar"] == "#0b1220"
+    assert VISUAL_TOKENS["color.sidebar"] == "#ffffff"
     assert VISUAL_TOKENS["space.page"]
     assert "#" in APP_STYLE
     shell = PageShell("Título", "Contexto", actions=[QPushButton("Ação")])
@@ -44,7 +44,7 @@ def test_dashboard_has_operational_hierarchy_and_quick_actions():
 
     page = DashboardPage()
 
-    assert page.page_shell.title_label.text() == "Dashboard"
+    assert page.page_shell.title_label.text() == "Início"
     assert page.metric_cards["orders"] is not None
     assert page.metric_cards["revenue"] is not None
     assert page.quick_actions.count() == 3

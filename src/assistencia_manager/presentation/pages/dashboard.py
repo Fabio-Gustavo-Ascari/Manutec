@@ -2,12 +2,31 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtWidgets import QFileDialog, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from assistencia_manager.application.services.dashboard_service import DashboardService
 from assistencia_manager.application.services.report_service import ReportService
 from assistencia_manager.presentation.shell import DashboardMetricCard, PageShell
+from assistencia_manager.presentation.navigation.icons import navigation_icon
+
+
+PRIMARY_MODULES = (
+    ("Financeiro", "Contas e fluxo de caixa"),
+    ("Estoque", "Peças, saldos e movimentações"),
+    ("Ordens de serviço", "Abertura e acompanhamento"),
+    ("Vendas", "Vendas, recebimentos e caixa"),
+    ("Clientes", "Cadastro e atendimento"),
+    ("Compras", "Pedidos e reposição"),
+)
+OTHER_MODULES = (
+    ("Equipamentos", "Aparelhos dos clientes"),
+    ("Cadastros", "Produtos, serviços e parceiros"),
+    ("Fiscal e periféricos", "Documentos e dispositivos"),
+    ("Relatórios", "Análises e exportações"),
+    ("Configurações", "Dados da assistência"),
+    ("Usuários e auditoria", "Acessos e histórico"),
+)
 
 
 class DashboardPage(QWidget):
@@ -19,7 +38,9 @@ class DashboardPage(QWidget):
         self.report_service = report_service
         refresh = QPushButton("Atualizar")
         refresh.clicked.connect(self.refresh)
-        self.page_shell = PageShell("Dashboard", "Resumo operacional da assistência", actions=[refresh])
+        self.page_shell = PageShell("Início", "Tudo o que você precisa para cuidar da sua assistência.", actions=[refresh])
+        self.module_buttons: dict[str, QPushButton] = {}
+        self.page_shell.body.addLayout(self._module_grid(PRIMARY_MODULES))
         self.metric_cards = {
             "orders": DashboardMetricCard("Ordens em andamento", accent="primary"),
             "overdue": DashboardMetricCard("Ordens atrasadas", accent="danger"),
@@ -53,18 +74,67 @@ class DashboardPage(QWidget):
         export = QPushButton("Exportar relatório de ordens")
         export.clicked.connect(self.export_orders)
         layout = QVBoxLayout()
+        overview = QLabel("Resumo da operação")
+        overview.setObjectName("sectionTitle")
+        layout.addWidget(overview)
         layout.addLayout(metrics)
         layout.addWidget(QLabel("Ações rápidas"), alignment=Qt.AlignmentFlag.AlignLeft)
         layout.addLayout(self.quick_actions)
         layout.addWidget(QLabel("Distribuição por status"), alignment=Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(self.status_summary)
         layout.addWidget(export, alignment=Qt.AlignmentFlag.AlignLeft)
+        other_heading = QLabel("Mais módulos")
+        other_heading.setObjectName("sectionTitle")
+        layout.addWidget(other_heading)
+        layout.addLayout(self._module_grid(OTHER_MODULES, compact=True))
         layout.addStretch()
         self.page_shell.body.addLayout(layout)
         outer = QVBoxLayout(self)
         outer.setContentsMargins(18, 18, 18, 18)
         outer.addWidget(self.page_shell)
         self.refresh()
+
+    def _module_grid(self, modules, *, compact: bool = False) -> QGridLayout:
+        grid = QGridLayout()
+        grid.setSpacing(12)
+        for index, (title, description) in enumerate(modules):
+            button = QPushButton()
+            button.setObjectName("moduleShortcut")
+            button.setProperty("compact", compact)
+            button.setAccessibleName(title)
+            button.setToolTip(f"Abrir {title}")
+            button.setCursor(Qt.CursorShape.PointingHandCursor)
+            button.setMinimumHeight(66 if compact else 86)
+            button.clicked.connect(lambda checked=False, target=title: self.navigation_requested.emit(target))
+            row = QHBoxLayout(button)
+            row.setContentsMargins(16, 12, 12, 12)
+            row.setSpacing(12)
+            icon = QLabel()
+            icon.setPixmap(navigation_icon(title).pixmap(QSize(26, 26)))
+            row.addWidget(icon)
+            text = QVBoxLayout()
+            text.setSpacing(4)
+            label = QLabel(title)
+            label.setObjectName("moduleTitle")
+            label.setWordWrap(True)
+            text.addWidget(label)
+            if not compact:
+                detail = QLabel(description)
+                detail.setObjectName("moduleDescription")
+                detail.setWordWrap(True)
+                text.addWidget(detail)
+            row.addLayout(text, 1)
+            arrow = QLabel("›")
+            arrow.setObjectName("moduleArrow")
+            row.addWidget(arrow)
+            # Labels must never intercept clicks intended for the whole tile.
+            for child in button.findChildren(QWidget):
+                child.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+            self.module_buttons[title] = button
+            grid.addWidget(button, index // 3, index % 3)
+        for column in range(3):
+            grid.setColumnStretch(column, 1)
+        return grid
 
     def refresh(self) -> None:
         if self.dashboard_service is None:

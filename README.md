@@ -35,6 +35,13 @@ Organizar o trabalho diário de assistências técnicas, reunindo clientes, equi
 - [x] Interface homologada nas 13 telas, com navegação acessível, rolagem
   responsiva e fluxo integrado de cliente até financeiro e relatórios.
 
+## Navegação
+
+A página inicial reúne atalhos para Financeiro, Estoque, Ordens de serviço,
+Vendas, Clientes e Compras. Os outros módulos ficam na seção Mais módulos.
+No menu lateral, clique nos grupos para expandir ou recolher suas opções.
+O visual usa superfícies brancas, destaques azuis e ícones vetoriais locais.
+
 ## Tecnologias
 
 - Python 3.13.
